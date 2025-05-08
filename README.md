@@ -3,6 +3,7 @@
 **SakuBijak** adalah aplikasi web yang dirancang untuk membantu pengguna mencatat, mengkategorikan, dan memantau pengeluaran pribadi mereka dengan mudah dan efisien. Aplikasi ini dibangun sebagai bagian dari Tugas Besar Mata Kuliah Pemrograman Web.
 
 **Nama Mahasiswa:** Alwi Arfan Solin
+
 **NIM:** 122140197
 
 ## Daftar Isi
@@ -81,7 +82,7 @@ Pastikan kamu memiliki perangkat lunak berikut terinstal di sistemmu:
 
 1.  **Clone repositori ini:**
     ```bash
-    git clone [URL Repositori GitHub Kamu]
+    git clone https://github.com/samanbrembo14/SakuBijak
     cd sakubijak/backend
     ```
 
