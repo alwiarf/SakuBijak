@@ -1,0 +1,28 @@
+# File: frontend/.gitignore
+
+# Environment variables
+.env
+.env*.local
+.env.*.local
+
+# Node modules
+node_modules
+
+# Build output
+dist
+dist-ssr
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
