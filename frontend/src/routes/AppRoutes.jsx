@@ -1,21 +1,32 @@
 // src/routes/AppRoutes.jsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux'; // Impor useSelector
+
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
-// Import halaman lain di sini nanti, contoh:
-// import DashboardPage from '../pages/DashboardPage';
-// import NotFoundPage from '../pages/NotFoundPage';
+import ProtectedLayout from '../components/layout/ProtectedLayout'; // Impor ProtectedLayout yang benar
+import DashboardPage from '../pages/DashboardPage'; // Impor DashboardPage yang sebenarnya
+
+// Placeholder untuk halaman lain yang mungkin Anda buat
+// const TransactionsPage = () => <div>Halaman Transaksi</div>;
+// const CategoriesPage = () => <div>Halaman Kategori</div>;
+// const ProfilePage = () => <div>Halaman Profil Pengguna</div>;
+const NotFoundContent = () => ( // Komponen untuk konten 404 di dalam layout
+    <div>
+      <h2>404 - Halaman Tidak Ditemukan</h2>
+      <p>Maaf, halaman yang Anda cari tidak ada.</p>
+    </div>
+  );
+
 
 const AppRoutes = () => {
-  // Contoh state untuk autentikasi (nantinya akan dari Redux atau Context)
-  // Untuk sekarang, kita asumsikan token disimpan di localStorage
-  const isAuthenticated = !!localStorage.getItem('authToken'); 
+  // Mengambil status autentikasi dari Redux store
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
     <Routes>
       {/* Rute Publik */}
-      {/* Jika pengguna sudah terautentikasi dan mencoba mengakses /login atau /register, arahkan ke dashboard */}
       <Route 
         path="/login" 
         element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
@@ -25,29 +36,56 @@ const AppRoutes = () => {
         element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" replace />} 
       />
 
-      {/* Rute Terproteksi (Contoh untuk Dashboard) */}
-      {/* Jika belum ada DashboardPage, Anda bisa mengarahkannya ke halaman placeholder atau login */}
+      {/* Rute Terproteksi di dalam ProtectedLayout */}
       <Route 
         path="/dashboard" 
-        element={isAuthenticated ? (<div>Halaman Dashboard (Belum Dibuat)</div>) : <Navigate to="/login" replace />} 
+        element={
+          isAuthenticated ? (
+            <ProtectedLayout>
+              <DashboardPage /> {/* Menggunakan komponen DashboardPage yang sebenarnya */}
+            </ProtectedLayout>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
       />
+      {/* Tambahkan rute terproteksi lainnya di sini, contoh: */}
+      {/* <Route 
+        path="/transactions" 
+        element={isAuthenticated ? <ProtectedLayout><TransactionsPage /></ProtectedLayout> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/categories" 
+        element={isAuthenticated ? <ProtectedLayout><CategoriesPage /></ProtectedLayout> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/profile" 
+        element={isAuthenticated ? <ProtectedLayout><ProfilePage /></ProtectedLayout> : <Navigate to="/login" replace />} 
+      />
+      */}
       
       {/* Rute Default */}
-      {/* Jika mengakses root path '/', arahkan ke dashboard jika sudah login, atau ke login jika belum */}
       <Route 
         path="/" 
         element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
       />
       
-      {/* Rute Not Found (Contoh) */}
-      {/* Jika tidak ada DashboardPage, arahkan semua rute tak dikenal ke halaman utama (login/dashboard) */}
+      {/* Rute Not Found */}
       <Route 
         path="*" 
-        element={<Navigate to="/" replace />} 
+        element={
+          isAuthenticated ? (
+            <ProtectedLayout>
+              <NotFoundContent /> {/* Menggunakan komponen konten 404 */}
+            </ProtectedLayout>
+          ) : (
+            // Jika ingin halaman 404 publik yang berbeda saat belum login:
+            // <PublicNotFoundPage /> 
+            // Untuk sekarang, arahkan ke login jika rute tidak dikenal dan belum auth
+            <Navigate to="/login" replace /> 
+          )
+        } 
       />
-      {/* Alternatif untuk halaman 404 khusus:
-      <Route path="*" element={<NotFoundPage />} /> 
-      */}
     </Routes>
   );
 };

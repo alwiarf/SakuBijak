@@ -1,5 +1,5 @@
 // File: src/pages/auth/RegisterPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -7,108 +7,111 @@ import {
   TextField,
   Button,
   Grid,
-  Link as MuiLink, // Memberi alias pada Link dari MUI
+  Link as MuiLink,
   Paper,
   Avatar,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Slide
 } from '@mui/material';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
-import apiClient from '../../services/apiClient';
-import { Link as RouterLink, useNavigate } from 'react-router-dom'; // IMPORT YANG BENAR
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+
+// Redux
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser, resetAuthStates } from '../../features/auth/authSlice';
+
+// Transisi untuk Snackbar
+function SlideTransition(props) {
+  return <Slide {...props} direction="up" />;
+}
 
 const RegisterPage = () => {
-  const navigate = useNavigate(); // Aktifkan dan inisialisasi useNavigate
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  // State lokal untuk input form
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
+  // State lokal untuk Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleSnackbarClose = (event, reason) => {
+  // Mengambil state dari Redux store
+  const { 
+    isLoading, 
+    isError, 
+    isSuccess, // isSuccess dari Redux menandakan thunk berhasil (bukan berarti user langsung login)
+    message 
+  } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isError && message) {
+      setSnackbarMessage(message);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      dispatch(resetAuthStates());
+    }
+
+    // Jika registrasi sukses (berdasarkan state Redux)
+    if (isSuccess && message.includes('Registrasi berhasil')) { // Lebih spesifik untuk pesan sukses registrasi
+      setSnackbarMessage(message);
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      // Arahkan ke halaman login setelah Snackbar tampil
+      setTimeout(() => {
+        navigate('/login');
+        dispatch(resetAuthStates()); // Reset state sukses setelah navigasi
+      }, 2500); // Beri waktu Snackbar untuk tampil
+    }
+  }, [isError, isSuccess, message, navigate, dispatch]);
+
+  const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
     setSnackbarOpen(false);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    setError('');
-    setLoading(true);
 
     if (!name || !email || !password || !confirmPassword) {
-      setError('Semua field wajib diisi.');
-      setSnackbarOpen(true); // Tampilkan notifikasi error juga
       setSnackbarMessage('Semua field wajib diisi.');
       setSnackbarSeverity('error');
-      setLoading(false);
+      setSnackbarOpen(true);
       return;
     }
-
     if (password !== confirmPassword) {
-      setError('Password dan konfirmasi password tidak cocok.');
-      setSnackbarOpen(true);
       setSnackbarMessage('Password dan konfirmasi password tidak cocok.');
       setSnackbarSeverity('error');
-      setLoading(false);
+      setSnackbarOpen(true);
       return;
     }
-
     if (!/\S+@\S+\.\S+/.test(email)) {
-        setError('Format email tidak valid.');
-        setSnackbarOpen(true);
-        setSnackbarMessage('Format email tidak valid.');
-        setSnackbarSeverity('error');
-        setLoading(false);
-        return;
-    }
-
-    if (password.length < 6) {
-        setError('Password minimal harus 6 karakter.');
-        setSnackbarOpen(true);
-        setSnackbarMessage('Password minimal harus 6 karakter.');
-        setSnackbarSeverity('error');
-        setLoading(false);
-        return;
-    }
-
-    try {
-      // --- AWAL BLOK MOCKUP ---
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Mock Registrasi berhasil untuk:', name, email);
-      
-      setSnackbarMessage('Registrasi berhasil! Anda akan diarahkan ke halaman login.');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-
-      setTimeout(() => {
-        navigate('/login'); 
-      }, 2500);
-      // --- AKHIR BLOK MOCKUP ---
-    } catch (err) {
-      console.error('Error saat registrasi:', err);
-      let errorMessage = 'Terjadi kesalahan saat registrasi. Silakan coba lagi.';
-      if (err.response) {
-        errorMessage = err.response.data.message || 'Registrasi gagal. Server error.';
-      } else if (err.request) {
-        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi Anda.';
-      }
-      setError(errorMessage);
-      setSnackbarMessage(errorMessage);
+      setSnackbarMessage('Format email tidak valid.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
-    } finally {
-      setLoading(false);
+      return;
     }
+    if (password.length < 6) {
+      setSnackbarMessage('Password minimal harus 6 karakter.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+    
+    const userData = {
+      name,
+      email,
+      password,
+    };
+    dispatch(registerUser(userData)); // Dispatch action registerUser
   };
 
   return (
@@ -166,8 +169,7 @@ const RegisterPage = () => {
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              error={!!error && (error.includes('Nama') || error.includes('wajib'))}
-              disabled={loading}
+              disabled={isLoading}
             />
             <TextField
               margin="normal"
@@ -179,8 +181,7 @@ const RegisterPage = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              error={!!error && (error.includes('Email') || error.includes('wajib') || error.includes('Format email'))}
-              disabled={loading}
+              disabled={isLoading}
             />
             <TextField
               margin="normal"
@@ -193,8 +194,7 @@ const RegisterPage = () => {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={!!error && (error.includes('Password') || error.includes('wajib') || error.includes('minimal harus') || error.includes('tidak cocok'))}
-              disabled={loading}
+              disabled={isLoading}
             />
             <TextField
               margin="normal"
@@ -207,25 +207,35 @@ const RegisterPage = () => {
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              error={!!error && (error.includes('Konfirmasi') || error.includes('wajib') || error.includes('tidak cocok'))}
-              disabled={loading}
+              disabled={isLoading}
             />
             
-            {error && (
+            {/* Pesan error dari form lokal bisa dihapus jika semua error ditangani via Snackbar Redux */}
+            {/* {error && (
               <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
                 {error}
               </Typography>
-            )}
+            )} */}
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="secondary" 
-              sx={{ mt: error ? 2 : 3, mb: 2, py: 1.5, position: 'relative' }}
-              disabled={loading}
+              sx={{ 
+                mt: 3, // Margin atas disesuaikan
+                mb: 2, 
+                py: 1.5, 
+                position: 'relative',
+                borderRadius: '4px',
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: '0.9rem',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.12)'
+              }}
+              disabled={isLoading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Daftar'}
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Daftar'}
             </Button>
             
             <Grid container justifyContent="flex-end">
@@ -249,12 +259,12 @@ const RegisterPage = () => {
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        autoHideDuration={4000} // Durasi bisa disesuaikan
+        onClose={handleCloseSnackbar}
+        TransitionComponent={SlideTransition}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        // TransitionComponent={SlideTransition} // Bisa ditambahkan jika SlideTransition diimpor
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }} variant="filled">
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }} variant="filled">
           {snackbarMessage}
         </Alert>
       </Snackbar>

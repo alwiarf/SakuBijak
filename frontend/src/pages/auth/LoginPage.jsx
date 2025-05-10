@@ -1,5 +1,5 @@
 // File: src/pages/auth/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -7,7 +7,7 @@ import {
   TextField,
   Button,
   Grid,
-  Link as MuiLink, // Memberi alias pada Link dari MUI
+  Link as MuiLink,
   Paper,
   Avatar,
   CircularProgress,
@@ -16,8 +16,11 @@ import {
   Slide
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-// import apiClient from '../../services/apiClient';
-import { Link as RouterLink, useNavigate } from 'react-router-dom'; // IMPORT YANG BENAR
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+
+// Redux
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, resetAuthStates } from '../../features/auth/authSlice';
 
 // Transisi untuk Snackbar
 function SlideTransition(props) {
@@ -25,102 +28,74 @@ function SlideTransition(props) {
 }
 
 const LoginPage = () => {
-  const navigate = useNavigate(); // Inisialisasi useNavigate
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // State lokal untuk input form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   
-  const [notification, setNotification] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  // State lokal untuk Snackbar (akan dikontrol oleh state Redux)
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleCloseNotification = (event, reason) => {
-    if (reason === 'clickaway') return;
-    setNotification({ ...notification, open: false });
-  };
+  // Mengambil state dari Redux store
+  const { 
+    // user, // Bisa digunakan untuk menyapa pengguna atau keperluan lain
+    isAuthenticated, 
+    isLoading, 
+    isError, 
+    isSuccess, 
+    message 
+  } = useSelector((state) => state.auth);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setLoading(true);
+  useEffect(() => {
+    // Jika ada error dari Redux, tampilkan di Snackbar
+    if (isError && message) {
+      setSnackbarMessage(message);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      dispatch(resetAuthStates()); // Reset state error setelah ditampilkan
+    }
 
-    if (!email || !password) {
-      setError('Email dan password tidak boleh kosong.');
-      setNotification({
-        open: true,
-        message: 'Email dan password tidak boleh kosong.',
-        severity: 'error'
-      });
-      setLoading(false);
+    // Jika login sukses dan pengguna terautentikasi
+    if (isSuccess && isAuthenticated && message.includes('Login berhasil')) { // Lebih spesifik untuk pesan sukses login
+      setSnackbarMessage(message);
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      // Pengalihan akan dilakukan setelah Snackbar tampil
+      setTimeout(() => {
+        navigate('/dashboard');
+        dispatch(resetAuthStates()); // Reset state sukses setelah navigasi
+      }, 1500); // Beri waktu Snackbar untuk tampil
+    }
+
+  }, [isError, isSuccess, isAuthenticated, message, navigate, dispatch]);
+
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
       return;
     }
+    setSnackbarOpen(false);
+  };
 
-    try {
-      // Panggil API backend untuk login
-      // Untuk sekarang, kita bisa mengomentari ini atau membuat mock response
-      // karena backend belum siap.
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
-      // --- AWAL BLOK UNTUK INTEGRASI API SEBENARNYA (AKTIFKAN NANTI) ---
-      /*
-      const response = await apiClient.post('/api/auth/login', {
-        email: email,
-        password: password,
-      });
-
-      console.log('Login berhasil:', response.data);
-      // TODO: Simpan token autentikasi (misalnya di localStorage atau Redux state)
-      // localStorage.setItem('authToken', response.data.token);
-      // TODO: Arahkan pengguna ke halaman dashboard
-      // navigate('/dashboard'); // Jika menggunakan react-router-dom
-      setNotification({
-        open: true,
-        message: 'Login berhasil!',
-        severity: 'success'
-      });
-      */
-      // --- AKHIR BLOK UNTUK INTEGRASI API SEBENARNYA ---
-      // --- AWAL BLOK MOCKUP ---
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      if (email === "user@example.com" && password === "password123") {
-        console.log('Mock Login berhasil untuk:', email);
-        localStorage.setItem('authToken', 'mockToken12345');
-        setNotification({
-          open: true,
-          message: 'Login berhasil! Mengarahkan...',
-          severity: 'success'
-        });
-        setTimeout(() => {         
-          navigate('/dashboard'); 
-        }, 1500);
-      } else {
-        setError('Login gagal. Email atau password salah.');
-        setNotification({
-          open: true,
-          message: 'Login gagal. Email atau password salah.',
-          severity: 'error'
-        });
-      }
-      // --- AKHIR BLOK MOCKUP ---
-    } catch (err) {
-      console.error('Error saat login:', err);
-      let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
-      if (err.response) {
-        errorMessage = err.response.data.message || 'Login gagal. Periksa kembali kredensial Anda.';
-      } else if (err.request) {
-        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
-      }
-      setError(errorMessage);
-      setNotification({
-        open: true,
-        message: errorMessage,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
+    if (!email || !password) {
+      setSnackbarMessage('Email dan password tidak boleh kosong.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
     }
+    
+    const userData = {
+      email,
+      password,
+    };
+    dispatch(loginUser(userData)); // Dispatch action loginUser
   };
 
   return (
@@ -131,9 +106,8 @@ const LoginPage = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        // Menghapus position: 'absolute' agar lebih standar dengan flex centering dari App/Router
         overflow: 'auto', 
-        bgcolor: 'background.default' // Pastikan tema diterapkan
+        bgcolor: 'background.default'
       }}
     >
       <Container
@@ -179,8 +153,7 @@ const LoginPage = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              error={!!error.includes('Email') || (!!error && !error.includes('password') && !error.includes('koneksi') && !error.includes('kesalahan'))}
-              disabled={loading}
+              disabled={isLoading} // Nonaktifkan saat loading dari Redux
             />
             <TextField
               margin="normal"
@@ -193,44 +166,43 @@ const LoginPage = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={!!error.includes('password')}
-              disabled={loading}
+              disabled={isLoading} // Nonaktifkan saat loading dari Redux
             />
             
-            {error && (
+            {/* Pesan error dari form lokal bisa dihapus jika semua error ditangani via Snackbar Redux */}
+            {/* {error && (
               <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
                 {error}
               </Typography>
-            )}
+            )} */}
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ 
-                mt: error ? 2 : 3, 
+                mt: 3, // Margin atas disesuaikan
                 mb: 2, 
                 py: 1.5, 
                 position: 'relative',
-                borderRadius: '4px', // Sesuai style Google
+                borderRadius: '4px',
                 textTransform: 'none', 
                 fontWeight: 500,
                 fontSize: '0.9rem',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.12)'
               }}
-              disabled={loading}
+              disabled={isLoading} // Nonaktifkan saat loading dari Redux
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
             </Button>
             
             <Grid container justifyContent="space-between">
               <Grid item>
-                <MuiLink href="#" variant="body2"> {/* Untuk Lupa Password, bisa jadi link biasa atau rute lain */}
+                <MuiLink href="#" variant="body2">
                   Lupa password?
                 </MuiLink>
               </Grid>
               <Grid item>
-                {/* Menggunakan MuiLink sebagai wrapper dan component prop untuk RouterLink */}
                 <MuiLink component={RouterLink} to="/register" variant="body2">
                   {"Belum punya akun? Daftar"}
                 </MuiLink>
@@ -240,7 +212,7 @@ const LoginPage = () => {
         </Paper>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
           {'© '}
-          <MuiLink color="inherit" href="#"> {/* Ganti dengan URL Anda */}
+          <MuiLink color="inherit" href="#">
             SakuBijak
           </MuiLink>{' '}
           {new Date().getFullYear()}
@@ -248,15 +220,15 @@ const LoginPage = () => {
         </Typography>
         
         <Snackbar
-          open={notification.open}
-          autoHideDuration={6000}
-          onClose={handleCloseNotification}
+          open={snackbarOpen}
+          autoHideDuration={4000} // Durasi bisa disesuaikan
+          onClose={handleCloseSnackbar}
           TransitionComponent={SlideTransition}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
           <Alert 
-            onClose={handleCloseNotification} 
-            severity={notification.severity}
+            onClose={handleCloseSnackbar} 
+            severity={snackbarSeverity}
             variant="filled"
             sx={{ 
               width: '100%',
@@ -268,7 +240,7 @@ const LoginPage = () => {
               }
             }}
           >
-            {notification.message}
+            {snackbarMessage}
           </Alert>
         </Snackbar>
       </Container>
