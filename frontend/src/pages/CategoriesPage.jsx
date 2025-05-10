@@ -1,3 +1,4 @@
+// src/pages/CategoriesPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -8,7 +9,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
+  // ListItemSecondaryAction, // Tidak digunakan secara langsung lagi, diganti Stack
   IconButton,
   Paper,
   CircularProgress,
@@ -20,19 +21,21 @@ import {
   Snackbar,
   Alert,
   Slide,
-  Grid,
-  Tooltip
+  // Grid, // Tidak digunakan secara langsung di level atas
+  Tooltip,
+  ListItemIcon,
+  Stack // Untuk tombol aksi di ListItem
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CategoryIcon from '@mui/icons-material/Category'; // Ikon generik untuk kategori
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
 import {
   fetchCategories,
   createCategory,
-//   updateCategory, // Akan digunakan nanti
-//   deleteCategory, // Akan digunakan nanti
+  updateCategory,
+  deleteCategory,
   resetCategoryStatus,
 } from '../features/categories/categorySlice';
 
@@ -47,45 +50,54 @@ const CategoriesPage = () => {
     (state) => state.categories
   );
 
-  // State untuk form tambah/edit kategori
+  // Logging state dari Redux untuk debugging
+  useEffect(() => {
+    console.log('CategoriesPage - Redux state:', { categories, isLoading, isError, isSuccess, message });
+  }, [categories, isLoading, isError, isSuccess, message]);
+
+
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState(null); // Untuk menyimpan data kategori yang diedit
+  const [currentCategory, setCurrentCategory] = useState(null);
   const [categoryName, setCategoryName] = useState('');
   const [categoryDescription, setCategoryDescription] = useState('');
   const [formError, setFormError] = useState('');
 
-
-  // State untuk dialog konfirmasi hapus
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-  // State untuk Snackbar notifikasi
   const [notification, setNotification] = useState({
     open: false,
     message: '',
     severity: 'success',
   });
 
-  // Fetch kategori saat komponen dimuat pertama kali
   useEffect(() => {
+    console.log('CategoriesPage: Attempting to fetch categories.');
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Efek untuk menangani notifikasi dari Redux state
   useEffect(() => {
-    if (isError && message) {
-      setNotification({ open: true, message: message, severity: 'error' });
+    // Pastikan message adalah string dan ada isinya sebelum menampilkan notifikasi
+    if ((isError || isSuccess) && typeof message === 'string' && message.trim() !== '') {
+      console.log('CategoriesPage - Notification effect triggered:', { isError, isSuccess, message });
+      setNotification({ 
+        open: true, 
+        message: message, 
+        severity: isError ? 'error' : 'success' 
+      });
       dispatch(resetCategoryStatus());
-    }
-    if (isSuccess && message) {
-      setNotification({ open: true, message: message, severity: 'success' });
-      dispatch(resetCategoryStatus());
-      if (openFormDialog) { // Tutup dialog form jika operasi sukses
-        handleCloseFormDialog();
+      
+      if (isSuccess) {
+        if (openFormDialog) {
+          handleCloseFormDialog();
+        }
+        if (openDeleteDialog) {
+          handleCloseDeleteDialog();
+        }
       }
     }
-  }, [isError, isSuccess, message, dispatch, openFormDialog]);
+  }, [isError, isSuccess, message, dispatch, openFormDialog, openDeleteDialog]);
 
 
   const handleOpenFormDialog = (category = null) => {
@@ -93,7 +105,7 @@ const CategoriesPage = () => {
     if (category) {
       setIsEditing(true);
       setCurrentCategory(category);
-      setCategoryName(category.name);
+      setCategoryName(category.name || ''); // Fallback jika name tidak ada
       setCategoryDescription(category.description || '');
     } else {
       setIsEditing(false);
@@ -106,7 +118,6 @@ const CategoriesPage = () => {
 
   const handleCloseFormDialog = () => {
     setOpenFormDialog(false);
-    // Reset form fields setelah beberapa saat agar transisi dialog selesai
     setTimeout(() => {
         setCategoryName('');
         setCategoryDescription('');
@@ -128,20 +139,21 @@ const CategoriesPage = () => {
         description: categoryDescription.trim() 
     };
 
-    if (isEditing && currentCategory) {
-      // dispatch(updateCategory({ ...categoryData, id: currentCategory.id })); // Untuk fitur update nanti
-      console.log("Dispatch update (belum diimplementasi penuh):", { ...categoryData, id: currentCategory.id })
-      // Untuk sementara, kita tutup dialog dan beri notif placeholder
-      setNotification({ open: true, message: "Fitur update belum diimplementasikan sepenuhnya.", severity: 'info' });
-      handleCloseFormDialog();
+    if (isEditing && currentCategory && currentCategory.id) { // Pastikan currentCategory dan id nya ada
+      dispatch(updateCategory({ ...categoryData, id: currentCategory.id }));
     } else {
       dispatch(createCategory(categoryData));
     }
   };
   
   const handleOpenDeleteDialog = (category) => {
-    setCategoryToDelete(category);
-    setOpenDeleteDialog(true);
+    if (category && category.id) { // Pastikan category dan id nya ada
+        setCategoryToDelete(category);
+        setOpenDeleteDialog(true);
+    } else {
+        console.error("Attempted to delete invalid category object:", category);
+        setNotification({ open: true, message: "Error: Kategori tidak valid untuk dihapus.", severity: 'error' });
+    }
   };
 
   const handleCloseDeleteDialog = () => {
@@ -150,15 +162,10 @@ const CategoriesPage = () => {
   };
 
   const handleDeleteConfirm = () => {
-    if (categoryToDelete) {
-      // dispatch(deleteCategory(categoryToDelete.id)); // Untuk fitur delete nanti
-      console.log("Dispatch delete (belum diimplementasi penuh):", categoryToDelete.id)
-      // Untuk sementara, kita tutup dialog dan beri notif placeholder
-      setNotification({ open: true, message: "Fitur delete belum diimplementasikan sepenuhnya.", severity: 'info' });
-      handleCloseDeleteDialog();
+    if (categoryToDelete && categoryToDelete.id) { // Pastikan categoryToDelete dan id nya ada
+      dispatch(deleteCategory(categoryToDelete.id));
     }
   };
-
 
   const handleCloseNotification = (event, reason) => {
     if (reason === 'clickaway') {
@@ -167,10 +174,81 @@ const CategoriesPage = () => {
     setNotification({ ...notification, open: false });
   };
 
+  // Komponen untuk menampilkan daftar kategori
+  const CategoryListDisplay = () => {
+    // Pengecekan ketat bahwa categories adalah array dan memiliki isi
+    if (!Array.isArray(categories) || categories.length === 0) {
+      // Kondisi ini seharusnya sudah ditangani oleh blok loading/empty/error di bawah,
+      // tapi ini sebagai lapisan pertahanan tambahan jika logika tersebut terlewat.
+      if (!isLoading && !isError) { // Jika tidak loading dan tidak error, berarti memang kosong
+        return (
+            <Paper elevation={0} sx={{p:3, textAlign: 'center', backgroundColor: 'transparent'}}>
+                <CategoryOutlinedIcon sx={{fontSize: 60, color: 'action.disabled', mb: 2}}/>
+                <Typography variant="h6" color="text.secondary">
+                Belum Ada Kategori
+                </Typography>
+                <Typography color="text.secondary">
+                Silakan tambahkan kategori pengeluaran pertama Anda.
+                </Typography>
+            </Paper>
+        );
+      }
+      return null; // Jangan render apa-apa jika sedang loading atau ada error yang sudah ditangani
+    }
+
+    console.log("CategoriesPage: Rendering category list with data:", categories);
+    return (
+      <Paper elevation={2} sx={{ width: '100%'}}>
+        <List sx={{padding: 0}}>
+          {categories.map((category, index) => {
+            // Pastikan category adalah objek dan memiliki id & name sebelum render
+            if (!category || typeof category.id === 'undefined' || typeof category.name === 'undefined') {
+              console.warn("CategoriesPage: Invalid category object found in list:", category);
+              return null; // Lewati item yang tidak valid
+            }
+            return (
+              <ListItem 
+                key={category.id} 
+                divider={index < categories.length - 1}
+                sx={{ 
+                    paddingY: 1.5,
+                    '&:hover': { backgroundColor: 'action.hover' }
+                }}
+                secondaryAction={
+                  <Stack direction="row" spacing={0.5}>
+                    <Tooltip title="Edit Kategori">
+                      <IconButton edge="end" aria-label="edit" onClick={() => handleOpenFormDialog(category)} size="small">
+                        <EditIcon fontSize="small"/>
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Hapus Kategori">
+                      <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(category)} size="small">
+                        <DeleteIcon fontSize="small"/>
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                }
+              >
+                <ListItemIcon sx={{minWidth: 40}}>
+                    <CategoryOutlinedIcon sx={{color: 'primary.main'}}/>
+                </ListItemIcon>
+                <ListItemText 
+                    primary={<Typography variant="subtitle1" sx={{fontWeight: 500}}>{category.name}</Typography>} 
+                    secondary={category.description || 'Tidak ada deskripsi'} 
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+      </Paper>
+    );
+  };
+
+
   return (
-    <Box sx={{ p: 0 }}> {/* Mengurangi padding default dari Box agar Container yang mengatur */}
+    <Box>
       <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 'medium' }}>
-        Manajemen Kategori
+        Manajemen Kategori Pengeluaran
       </Typography>
 
       <Button
@@ -178,65 +256,29 @@ const CategoriesPage = () => {
         startIcon={<AddCircleOutlineIcon />}
         onClick={() => handleOpenFormDialog()}
         sx={{ mb: 3 }}
+        disabled={isLoading && (!Array.isArray(categories) || categories.length === 0)}
       >
         Tambah Kategori Baru
       </Button>
 
-      {isLoading && !categories.length && ( // Tampilkan loading hanya jika belum ada kategori
+      {isLoading && (!Array.isArray(categories) || categories.length === 0) && (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
           <CircularProgress />
         </Box>
       )}
 
-      {!isLoading && !categories.length && !isError && (
-        <Typography sx={{ textAlign: 'center', mt: 3 }}>
-          Belum ada kategori. Silakan tambahkan kategori baru.
-        </Typography>
-      )}
-      
-      {/* Tampilkan error jika ada dan tidak sedang loading atau tidak ada kategori */}
-      {isError && !isLoading && !categories.length && (
+      {!isLoading && isError && (!Array.isArray(categories) || categories.length === 0) && (
          <Alert severity="error" sx={{ mt: 2 }}>
-            Gagal memuat kategori: {message}
+            Gagal memuat kategori: {typeof message === 'string' ? message : 'Terjadi kesalahan tidak diketahui.'}
         </Alert>
       )}
+      
+      {/* Selalu coba render CategoryListDisplay, logika internalnya akan menangani kasus kosong/error */}
+      <CategoryListDisplay />
 
-
-      {categories.length > 0 && (
-        <Paper elevation={2} sx={{ width: '100%'}}>
-          <List>
-            {categories.map((category) => (
-              <ListItem 
-                key={category.id} 
-                divider
-                secondaryAction={
-                  <>
-                    <Tooltip title="Edit Kategori">
-                      <IconButton edge="end" aria-label="edit" onClick={() => handleOpenFormDialog(category)} sx={{mr: 0.5}}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Hapus Kategori">
-                      <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(category)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </>
-                }
-              >
-                <CategoryIcon sx={{mr: 2, color: 'action.active'}}/> {/* Ikon di samping nama kategori */}
-                <ListItemText 
-                    primary={category.name} 
-                    secondary={category.description || 'Tidak ada deskripsi'} 
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      )}
 
       {/* Dialog untuk Tambah/Edit Kategori */}
-      <Dialog open={openFormDialog} onClose={handleCloseFormDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openFormDialog} onClose={handleCloseFormDialog} maxWidth="sm" fullWidth PaperProps={{component: 'form', onSubmit: (e) => {e.preventDefault(); handleFormSubmit();}}}>
         <DialogTitle>{isEditing ? 'Edit Kategori' : 'Tambah Kategori Baru'}</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{mb: 2}}>
@@ -271,7 +313,7 @@ const CategoriesPage = () => {
         </DialogContent>
         <DialogActions sx={{pb:2, pr:2}}>
           <Button onClick={handleCloseFormDialog}>Batal</Button>
-          <Button onClick={handleFormSubmit} variant="contained" disabled={isLoading}>
+          <Button type="submit" variant="contained" disabled={isLoading}>
             {isLoading ? <CircularProgress size={24} /> : (isEditing ? 'Simpan Perubahan' : 'Tambah')}
           </Button>
         </DialogActions>
@@ -287,7 +329,7 @@ const CategoriesPage = () => {
         <DialogTitle id="alert-dialog-title">Konfirmasi Hapus Kategori</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Apakah Anda yakin ingin menghapus kategori "<b>{categoryToDelete?.name}</b>"? Tindakan ini tidak dapat diurungkan.
+            Apakah Anda yakin ingin menghapus kategori "<b>{categoryToDelete?.name || ''}</b>"? Transaksi yang terkait dengan kategori ini mungkin perlu diperbarui. Tindakan ini tidak dapat diurungkan.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{pb:2, pr:2}}>
@@ -297,7 +339,6 @@ const CategoriesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
 
       {/* Snackbar untuk Notifikasi Global */}
       <Snackbar
@@ -311,9 +352,10 @@ const CategoriesPage = () => {
           onClose={handleCloseNotification}
           severity={notification.severity}
           variant="filled"
+          elevation={6}
           sx={{ width: '100%' }}
         >
-          {notification.message}
+          {typeof notification.message === 'string' ? notification.message : 'Terjadi pembaruan.'}
         </Alert>
       </Snackbar>
     </Box>
