@@ -1,27 +1,28 @@
 // src/routes/AppRoutes.jsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux'; // Impor useSelector
+import { useSelector } from 'react-redux';
 
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
-import ProtectedLayout from '../components/layout/ProtectedLayout'; // Impor ProtectedLayout yang benar
-import DashboardPage from '../pages/DashboardPage'; // Impor DashboardPage yang sebenarnya
+import ProtectedLayout from '../components/layout/ProtectedLayout';
+import DashboardPage from '../pages/DashboardPage';
+import CategoriesPage from '../pages/CategoriesPage'; // Impor CategoriesPage
 
 // Placeholder untuk halaman lain yang mungkin Anda buat
 // const TransactionsPage = () => <div>Halaman Transaksi</div>;
-// const CategoriesPage = () => <div>Halaman Kategori</div>;
 // const ProfilePage = () => <div>Halaman Profil Pengguna</div>;
-const NotFoundContent = () => ( // Komponen untuk konten 404 di dalam layout
-    <div>
-      <h2>404 - Halaman Tidak Ditemukan</h2>
-      <p>Maaf, halaman yang Anda cari tidak ada.</p>
-    </div>
+
+// Komponen untuk konten 404 di dalam layout
+const NotFoundContent = () => (
+    <Box sx={{textAlign: 'center', mt: 5, p:3}}> {/* Tambahkan Box dan padding */}
+      <Typography variant="h4" gutterBottom>404 - Halaman Tidak Ditemukan</Typography>
+      <Typography variant="body1">Maaf, halaman yang Anda cari tidak ada.</Typography>
+    </Box>
   );
 
 
 const AppRoutes = () => {
-  // Mengambil status autentikasi dari Redux store
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
@@ -42,7 +43,19 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <ProtectedLayout>
-              <DashboardPage /> {/* Menggunakan komponen DashboardPage yang sebenarnya */}
+              <DashboardPage />
+            </ProtectedLayout>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/categories" 
+        element={
+          isAuthenticated ? (
+            <ProtectedLayout>
+              <CategoriesPage /> {/* Tambahkan rute untuk CategoriesPage */}
             </ProtectedLayout>
           ) : (
             <Navigate to="/login" replace />
@@ -53,10 +66,6 @@ const AppRoutes = () => {
       {/* <Route 
         path="/transactions" 
         element={isAuthenticated ? <ProtectedLayout><TransactionsPage /></ProtectedLayout> : <Navigate to="/login" replace />} 
-      />
-      <Route 
-        path="/categories" 
-        element={isAuthenticated ? <ProtectedLayout><CategoriesPage /></ProtectedLayout> : <Navigate to="/login" replace />} 
       />
       <Route 
         path="/profile" 
@@ -76,12 +85,9 @@ const AppRoutes = () => {
         element={
           isAuthenticated ? (
             <ProtectedLayout>
-              <NotFoundContent /> {/* Menggunakan komponen konten 404 */}
+              <NotFoundContent />
             </ProtectedLayout>
           ) : (
-            // Jika ingin halaman 404 publik yang berbeda saat belum login:
-            // <PublicNotFoundPage /> 
-            // Untuk sekarang, arahkan ke login jika rute tidak dikenal dan belum auth
             <Navigate to="/login" replace /> 
           )
         } 
