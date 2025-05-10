@@ -19,14 +19,16 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  Divider
+  Divider,
+  Avatar // Untuk menampilkan inisial pengguna jika tidak ada foto
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CategoryIcon from '@mui/icons-material/Category';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'; // Ikon untuk Transaksi
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline'; // Ikon untuk user
 
 // Transisi untuk Snackbar
 function SlideTransition(props) {
@@ -34,25 +36,28 @@ function SlideTransition(props) {
 }
 
 // Komponen tombol navigasi dengan styling untuk NavLink
-const NavButton = ({ to, icon, children }) => (
+const NavButton = ({ to, icon, children, onClick }) => (
   <Button 
-    component={NavLink}
-    to={to}
+    component={onClick ? Button : NavLink} // Jadi Button jika ada onClick, NavLink jika tidak
+    to={onClick ? undefined : to}
+    onClick={onClick}
     startIcon={icon}
     sx={{ 
       textTransform: 'none',
       fontWeight: 500,
       color: 'text.secondary', 
-      py: 1,
-      px: 2,
+      py: 0.75, // Padding vertikal sedikit dikurangi untuk AppBar yang lebih ramping
+      px: 1.5,  // Padding horizontal
       borderRadius: '4px',
+      minWidth: 'auto', // Agar tombol tidak terlalu lebar jika teksnya pendek
       '&:hover': {
-        backgroundColor: 'action.hover',
+        backgroundColor: 'action.hover', // Warna hover dari tema
         color: 'primary.main',
       },
+      // Styling untuk NavLink aktif
       '&.active': { 
-        backgroundColor: 'primary.light', // Warna latar saat aktif
-        color: 'primary.contrastText',    // Warna teks kontras saat aktif
+        backgroundColor: 'primary.light', // Warna latar saat aktif dari tema
+        color: 'primary.main',    // Warna teks utama saat aktif
         fontWeight: 'bold',
       }
     }}
@@ -68,177 +73,168 @@ const ProtectedLayout = ({ children }) => {
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [anchorElNav, setAnchorElNav] = React.useState(null); // Untuk menu navigasi mobile
+  const [anchorElUser, setAnchorElUser] = React.useState(null); // Untuk menu user mobile/desktop
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-
+  const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = (path) => {
     setAnchorElNav(null);
-    if (typeof path === 'string') {
-      navigate(path);
-    }
+    if (typeof path === 'string') navigate(path);
   };
 
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
+
   const handleLogout = () => {
-    handleCloseNavMenu();
+    handleCloseUserMenu(); // Tutup menu user jika terbuka
+    handleCloseNavMenu();   // Tutup menu nav jika terbuka
     dispatch(logoutUser());
     dispatch(resetAuthStates());
     setSnackbarMessage('Anda telah berhasil logout.');
     setSnackbarOpen(true);
-    setTimeout(() => {
-        navigate('/login');
-    }, 1500);
+    setTimeout(() => navigate('/login'), 1500);
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setSnackbarOpen(false);
   };
   
-  // Definisikan item navigasi dalam array agar mudah dikelola
   const navItems = [
     { text: 'Dashboard', icon: <DashboardIcon fontSize="small"/>, path: '/dashboard' },
     { text: 'Kategori', icon: <CategoryIcon fontSize="small"/>, path: '/categories' },
-    { text: 'Transaksi', icon: <ReceiptLongIcon fontSize="small"/>, path: '/transactions' }, // Tambahkan item Transaksi
+    { text: 'Transaksi', icon: <ReceiptLongIcon fontSize="small"/>, path: '/transactions' },
   ];
+
+  const userDisplayName = user?.name ? user.name.split(' ')[0] : (user?.email || 'User');
+  const userInitial = userDisplayName.charAt(0).toUpperCase();
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar 
         position="sticky"
-        elevation={1} // Shadow yang lebih lembut
+        elevation={0} // AppBar flat, border dari sx
         sx={{ 
-          backgroundColor: 'white', // AppBar putih
-          color: 'text.primary',    // Warna teks utama untuk AppBar putih
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}` // Garis bawah tipis
+          backgroundColor: 'background.paper', // Menggunakan background.paper dari tema
+          color: 'text.primary',
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`
         }}
       >
-        <Container maxWidth="lg"> {/* Membatasi lebar Toolbar */}
-          <Toolbar disableGutters>
+        <Container maxWidth="lg">
+          <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 } }}> {/* Tinggi AppBar standar */}
             {/* Logo dan Judul Aplikasi (Kiri) */}
-            <AccountBalanceWalletIcon sx={{ color: 'primary.main', mr: 1, display: 'flex' }} /> 
-            <Typography 
-              variant="h6" 
-              component={RouterLink}
-              to="/dashboard"
-              noWrap
-              sx={{ 
-                mr: 2,
-                fontWeight: 600,
-                color: 'primary.main',
-                textDecoration: 'none',
-                display: 'flex' 
-              }}
-            >
-              SakuBijak
-            </Typography>
+            <Box component={RouterLink} to="/dashboard" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
+              <AccountBalanceWalletIcon sx={{ color: 'primary.main', mr: 1, fontSize: '28px' }} /> 
+              <Typography 
+                variant="h6" 
+                noWrap
+                sx={{ 
+                  fontWeight: 600,
+                  color: 'text.primary', // Warna teks primary agar lebih tegas
+                  display: { xs: 'none', sm: 'block' } // Judul teks tampil di sm ke atas
+                }}
+              >
+                SakuBijak
+              </Typography>
+            </Box>
 
-            {/* Spacer untuk mendorong elemen ke kanan */}
-            <Box sx={{ flexGrow: 1 }} />
-
-            {/* Navigasi Links untuk layar besar (md ke atas) */}
+            {/* Navigasi Links untuk layar besar (md ke atas) di tengah */}
             <Stack 
               direction="row" 
-              spacing={0.5} // Jarak antar tombol navigasi
-              sx={{ display: { xs: 'none', md: 'flex' } }}
+              spacing={1} // Spacing antar tombol
+              sx={{ flexGrow: 1, justifyContent: 'center', display: { xs: 'none', md: 'flex' } }}
             >
               {navItems.map((item) => (
                 <NavButton key={item.text} to={item.path} icon={item.icon}>{item.text}</NavButton>
               ))}
             </Stack>
             
-            {/* User Info dan Logout untuk layar besar (md ke atas) */}
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', ml: 2 }}> {/* ml:2 untuk jarak */}
-              {user && (
-                <Tooltip title={user.name || user.email}>
-                  <Typography variant="body2" sx={{ mr: 2, color: 'text.secondary', cursor: 'default' }}>
-                    Halo, {user.name ? user.name.split(' ')[0] : user.email}!
-                  </Typography>
-                </Tooltip>
-              )}
-              <Button 
-                variant="outlined"
-                color="primary"
-                onClick={handleLogout} 
-                startIcon={<ExitToAppIcon />}
-                size="small"
-                sx={{ 
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
+            {/* Spacer untuk layar kecil, agar logo di kiri dan menu di kanan */}
+            <Box sx={{ flexGrow: { xs: 1, md: 0 } }} />
+
+
+            {/* User Avatar dan Menu untuk layar besar */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+              <Tooltip title={user?.name || user?.email || 'Akun Pengguna'}>
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, ml: 2 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '1rem' }}>{userInitial}</Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }}
+                id="menu-appbar-user-desktop"
+                anchorEl={anchorElUser}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                keepMounted
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
               >
-                Logout
-              </Button>
+                <MenuItem disabled>
+                  <Typography variant="subtitle2" sx={{fontWeight: 'medium'}}>{userDisplayName}</Typography>
+                </MenuItem>
+                <Divider/>
+                {/* <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/profile'); }}>
+                  <ListItemIcon><PersonOutlineIcon fontSize="small" /></ListItemIcon>
+                  Profil Saya
+                </MenuItem> */}
+                <MenuItem onClick={handleLogout}>
+                  <ListItemIcon><ExitToAppIcon fontSize="small" /></ListItemIcon>
+                  Logout
+                </MenuItem>
+              </Menu>
             </Box>
 
             {/* Menu Mobile (Hamburger Icon) - Tampil di layar kecil (xs dan sm) */}
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+              <Tooltip title={user?.name || user?.email || 'Akun Pengguna'}>
+                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, mr: 1 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.875rem' }}>{userInitial}</Avatar>
+                </IconButton>
+              </Tooltip>
               <IconButton
-                size="large"
+                size="medium" // Ukuran ikon disesuaikan
                 aria-label="navigation menu"
                 aria-controls="menu-appbar-nav"
                 aria-haspopup="true"
                 onClick={handleOpenNavMenu}
-                color="inherit" // Mengambil warna dari parent (AppBar -> text.primary)
+                color="inherit"
               >
                 <MenuIcon />
               </IconButton>
               <Menu
                 id="menu-appbar-nav"
                 anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right', 
-                }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 open={Boolean(anchorElNav)}
-                onClose={() => handleCloseNavMenu()} // Tutup menu tanpa navigasi jika diklik di luar
-                sx={{
-                  display: { xs: 'block', md: 'none' },
-                }}
+                onClose={() => handleCloseNavMenu()}
               >
-                {navItems.map((item) => ( // Menggunakan array navItems untuk menu mobile
+                {navItems.map((item) => (
                   <MenuItem key={item.text} onClick={() => handleCloseNavMenu(item.path)}>
                     <ListItemIcon>{item.icon}</ListItemIcon>
                     <Typography textAlign="left">{item.text}</Typography>
                   </MenuItem>
                 ))}
-                <Divider />
-                 {user && (
-                    <MenuItem disabled sx={{ justifyContent: 'center' }}>
-                        <Typography variant="caption">Halo, {user.name ? user.name.split(' ')[0] : user.email}!</Typography>
-                    </MenuItem>
-                 )}
-                <MenuItem onClick={handleLogout}>
-                  <ListItemIcon><ExitToAppIcon fontSize="small" /></ListItemIcon>
-                  <Typography textAlign="left">Logout</Typography>
-                </MenuItem>
+                {/* User-specific menu items for mobile can be added here if different from desktop */}
               </Menu>
             </Box>
-            
           </Toolbar>
         </Container>
       </AppBar>
       
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: {xs: 2, sm: 3}, mt: 2 }}>
+      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: {xs: 2, sm: 3}, mt: {xs: 1, sm: 2} }}> {/* Margin atas disesuaikan */}
         {children}
       </Container>
 
       <Box
         component="footer"
         sx={{
-          py: 2.5,
+          py: 2, // Padding footer dikurangi sedikit
           px: 2,
           mt: 'auto',
-          backgroundColor: 'white',
+          backgroundColor: 'background.paper', // Footer dengan warna paper
           borderTop: (theme) => `1px solid ${theme.palette.divider}`
         }}
       >
@@ -254,7 +250,7 @@ const ProtectedLayout = ({ children }) => {
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         TransitionComponent={SlideTransition}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Notifikasi di atas
       >
         <Alert onClose={handleCloseSnackbar} severity="success" variant="filled" elevation={6} sx={{ width: '100%' }}>
           {snackbarMessage}
