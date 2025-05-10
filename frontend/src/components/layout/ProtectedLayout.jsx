@@ -25,8 +25,8 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CategoryIcon from '@mui/icons-material/Category';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'; // Ikon untuk Transaksi
 import MenuIcon from '@mui/icons-material/Menu';
-// import SettingsIcon from '@mui/icons-material/Settings'; // Contoh ikon lain
 
 // Transisi untuk Snackbar
 function SlideTransition(props) {
@@ -51,8 +51,8 @@ const NavButton = ({ to, icon, children }) => (
         color: 'primary.main',
       },
       '&.active': { 
-        backgroundColor: 'primary.light',
-        color: 'primary.contrastText',
+        backgroundColor: 'primary.light', // Warna latar saat aktif
+        color: 'primary.contrastText',    // Warna teks kontras saat aktif
         fontWeight: 'bold',
       }
     }}
@@ -99,26 +99,27 @@ const ProtectedLayout = ({ children }) => {
     setSnackbarOpen(false);
   };
   
+  // Definisikan item navigasi dalam array agar mudah dikelola
   const navItems = [
     { text: 'Dashboard', icon: <DashboardIcon fontSize="small"/>, path: '/dashboard' },
     { text: 'Kategori', icon: <CategoryIcon fontSize="small"/>, path: '/categories' },
-    // { text: 'Transaksi', icon: <ReceiptLongIcon fontSize="small"/>, path: '/transactions' },
+    { text: 'Transaksi', icon: <ReceiptLongIcon fontSize="small"/>, path: '/transactions' }, // Tambahkan item Transaksi
   ];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar 
         position="sticky"
-        elevation={1}
+        elevation={1} // Shadow yang lebih lembut
         sx={{ 
-          backgroundColor: 'white',
-          color: 'text.primary',
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`
+          backgroundColor: 'white', // AppBar putih
+          color: 'text.primary',    // Warna teks utama untuk AppBar putih
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}` // Garis bawah tipis
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg"> {/* Membatasi lebar Toolbar */}
           <Toolbar disableGutters>
-            {/* Logo dan Judul Aplikasi (Kiri) - Tampil di semua ukuran layar */}
+            {/* Logo dan Judul Aplikasi (Kiri) */}
             <AccountBalanceWalletIcon sx={{ color: 'primary.main', mr: 1, display: 'flex' }} /> 
             <Typography 
               variant="h6" 
@@ -136,14 +137,14 @@ const ProtectedLayout = ({ children }) => {
               SakuBijak
             </Typography>
 
-            {/* Spacer untuk mendorong menu mobile ke kanan / nav desktop ke tengah */}
+            {/* Spacer untuk mendorong elemen ke kanan */}
             <Box sx={{ flexGrow: 1 }} />
 
             {/* Navigasi Links untuk layar besar (md ke atas) */}
             <Stack 
               direction="row" 
-              spacing={0.5}
-              sx={{ display: { xs: 'none', md: 'flex' } }} // Hanya tampil di layar md ke atas
+              spacing={0.5} // Jarak antar tombol navigasi
+              sx={{ display: { xs: 'none', md: 'flex' } }}
             >
               {navItems.map((item) => (
                 <NavButton key={item.text} to={item.path} icon={item.icon}>{item.text}</NavButton>
@@ -151,7 +152,7 @@ const ProtectedLayout = ({ children }) => {
             </Stack>
             
             {/* User Info dan Logout untuk layar besar (md ke atas) */}
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', ml: 2 }}> {/* ml:2 untuk jarak dari nav desktop */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', ml: 2 }}> {/* ml:2 untuk jarak */}
               {user && (
                 <Tooltip title={user.name || user.email}>
                   <Typography variant="body2" sx={{ mr: 2, color: 'text.secondary', cursor: 'default' }}>
@@ -175,14 +176,14 @@ const ProtectedLayout = ({ children }) => {
             </Box>
 
             {/* Menu Mobile (Hamburger Icon) - Tampil di layar kecil (xs dan sm) */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' } }}> {/* Hanya tampil di layar xs dan sm */}
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
               <IconButton
                 size="large"
                 aria-label="navigation menu"
                 aria-controls="menu-appbar-nav"
                 aria-haspopup="true"
                 onClick={handleOpenNavMenu}
-                color="inherit"
+                color="inherit" // Mengambil warna dari parent (AppBar -> text.primary)
               >
                 <MenuIcon />
               </IconButton>
@@ -191,23 +192,23 @@ const ProtectedLayout = ({ children }) => {
                 anchorEl={anchorElNav}
                 anchorOrigin={{
                   vertical: 'bottom',
-                  horizontal: 'right', // Menu muncul dari kanan
+                  horizontal: 'right', 
                 }}
                 keepMounted
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'right', // Transformasi dari kanan
+                  horizontal: 'right',
                 }}
                 open={Boolean(anchorElNav)}
-                onClose={() => handleCloseNavMenu()}
+                onClose={() => handleCloseNavMenu()} // Tutup menu tanpa navigasi jika diklik di luar
                 sx={{
                   display: { xs: 'block', md: 'none' },
                 }}
               >
-                {navItems.map((item) => (
+                {navItems.map((item) => ( // Menggunakan array navItems untuk menu mobile
                   <MenuItem key={item.text} onClick={() => handleCloseNavMenu(item.path)}>
                     <ListItemIcon>{item.icon}</ListItemIcon>
-                    <Typography textAlign="left">{item.text}</Typography> {/* Teks rata kiri */}
+                    <Typography textAlign="left">{item.text}</Typography>
                   </MenuItem>
                 ))}
                 <Divider />
@@ -218,7 +219,7 @@ const ProtectedLayout = ({ children }) => {
                  )}
                 <MenuItem onClick={handleLogout}>
                   <ListItemIcon><ExitToAppIcon fontSize="small" /></ListItemIcon>
-                  <Typography textAlign="left">Logout</Typography> {/* Teks rata kiri */}
+                  <Typography textAlign="left">Logout</Typography>
                 </MenuItem>
               </Menu>
             </Box>
