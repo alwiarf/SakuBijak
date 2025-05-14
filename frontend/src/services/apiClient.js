@@ -2,12 +2,12 @@
 
 import axios from 'axios';
 
-// Base URL untuk API backend Anda.
-// Ganti dengan URL backend Anda yang sebenarnya jika berbeda.
-// Contoh: 'http://localhost:6543/api' jika semua endpoint API Anda diawali dengan /api
-// atau 'http://localhost:6543' jika endpoint yang Anda berikan sudah lengkap.
-// Berdasarkan endpoint yang Anda berikan (misal: /api/auth/login),
-// maka baseURL sebaiknya adalah alamat server backend Anda.
+// Base URL untuk API backend .
+// Ganti dengan URL backend yang sebenarnya jika berbeda.
+// Contoh: 'http://localhost:6543/api' jika semua endpoint API diawali dengan /api
+// atau 'http://localhost:6543' jika endpoint yang berikan sudah lengkap.
+// Berdasarkan endpoint yang berikan (misal: /api/auth/login),
+// maka baseURL sebaiknya adalah alamat server backend.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:6543'; // Default ke port Pyramid
 
 // Membuat instance Axios dengan konfigurasi default
@@ -23,7 +23,7 @@ const apiClient = axios.create({
 // Kita bisa menggunakannya untuk menambahkan token autentikasi ke header.
 apiClient.interceptors.request.use(
   (config) => {
-    // Ambil token dari localStorage (atau Redux store, atau di mana pun Anda menyimpannya)
+    // Ambil token dari localStorage (atau Redux store, atau di mana pun menyimpannya)
     // Untuk contoh ini, kita asumsikan token disimpan di localStorage
     const token = localStorage.getItem('authToken'); // 'authToken' adalah contoh nama key
 
@@ -61,7 +61,7 @@ apiClient.interceptors.response.use(
 
       if (error.response.status === 401) {
         // Jika error adalah 401 (Unauthorized), mungkin token tidak valid atau kedaluwarsa.
-        // Anda bisa mengarahkan pengguna ke halaman login atau mencoba refresh token.
+        // bisa mengarahkan pengguna ke halaman login atau mencoba refresh token.
         // Contoh: localStorage.removeItem('authToken');
         // window.location.href = '/login'; // Redirect ke login
         console.warn('Unauthorized access - 401. Redirecting to login or refreshing token might be needed.');

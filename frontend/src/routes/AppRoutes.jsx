@@ -2,14 +2,15 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Box, Typography } from '@mui/material'; // Impor Box dan Typography
+import { Box, Typography } from '@mui/material';
 
+import LandingPage from '../pages/LandingPage'; // Impor LandingPage
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ProtectedLayout from '../components/layout/ProtectedLayout';
 import DashboardPage from '../pages/DashboardPage';
 import CategoriesPage from '../pages/CategoriesPage';
-import TransactionsPage from '../pages/TransactionsPage'; // Impor TransactionsPage
+import TransactionsPage from '../pages/TransactionsPage';
 
 // Komponen untuk konten 404 di dalam layout
 const NotFoundContent = () => (
@@ -25,7 +26,13 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Rute Publik */}
+      {/* Rute untuk Landing Page - menjadi halaman utama jika belum login */}
+      <Route 
+        path="/" 
+        element={!isAuthenticated ? <LandingPage /> : <Navigate to="/dashboard" replace />} 
+      />
+
+      {/* Rute Publik Lainnya */}
       <Route 
         path="/login" 
         element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
@@ -44,7 +51,8 @@ const AppRoutes = () => {
               <DashboardPage />
             </ProtectedLayout>
           ) : (
-            <Navigate to="/login" replace />
+            // Jika mencoba akses dashboard tanpa auth, arahkan ke Landing Page (atau Login)
+            <Navigate to="/" replace /> 
           )
         } 
       />
@@ -56,36 +64,27 @@ const AppRoutes = () => {
               <CategoriesPage />
             </ProtectedLayout>
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/" replace />
           )
         } 
       />
       <Route 
-        path="/transactions" // Rute untuk halaman transaksi
+        path="/transactions"
         element={
           isAuthenticated ? (
             <ProtectedLayout>
-              <TransactionsPage /> {/* Menggunakan TransactionsPage */}
+              <TransactionsPage />
             </ProtectedLayout>
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/" replace />
           )
         } 
       />
-      {/* Tambahkan rute terproteksi lainnya di sini, contoh: */}
-      {/* <Route 
-        path="/profile" 
-        element={isAuthenticated ? <ProtectedLayout><ProfilePage /></ProtectedLayout> : <Navigate to="/login" replace />} 
-      />
-      */}
-      
-      {/* Rute Default */}
-      <Route 
-        path="/" 
-        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
-      />
+      {/* Tambahkan rute terproteksi lainnya di sini */}
       
       {/* Rute Not Found */}
+      {/* Jika path tidak cocok dan sudah login, tampilkan 404 dalam layout */}
+      {/* Jika belum login, akan diarahkan ke Landing Page oleh logika di atas atau rute "/" */}
       <Route 
         path="*" 
         element={
@@ -94,7 +93,8 @@ const AppRoutes = () => {
               <NotFoundContent />
             </ProtectedLayout>
           ) : (
-            <Navigate to="/login" replace /> 
+            // Jika belum login dan akses rute aneh, arahkan ke Landing Page
+            <Navigate to="/" replace /> 
           )
         } 
       />
