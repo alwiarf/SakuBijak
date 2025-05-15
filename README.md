@@ -176,4 +176,4 @@ Berikut adalah daftar endpoint utama yang disediakan oleh backend SakuBijak:
 
 ## Kontribusi
 
-Saat ini, proyek ini dikembangkan sebagai tugas individu. Namun, saran dan masukan selalu diterima. Jika kamu menemukan bug atau memiliki ide untuk perbaikan, silakan buat *Issue* di repositori GitHub ini.
+Saat ini, proyek ini dikembangkan sebagai tugas individu. Namun, saran dan masukan selalu diterima. Jika kamu menemukan bug atau memiliki ide untuk perbaikan, silakan buat *Issue* di repositori GitHub ini. :) 
