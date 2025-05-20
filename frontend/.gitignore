@@ -1,6 +1,8 @@
 # File: frontend/.gitignore
 
 # Environment variables
+# Virtual Environment
+./backend/env/
 .env
 .env*.local
 .env.*.local

@@ -1,0 +1,3 @@
+[run]
+source = sakubijak_backend
+omit = sakubijak_backend/test*

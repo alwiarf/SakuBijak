@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+/env/ # <--- BARIS YANG BARU ANDA TAMBAHKAN
+
+# Frontend Node modules (jika ada .gitignore di root juga)
+/frontend/node_modules/
+/frontend/dist/ # Jika ada folder build untuk frontend
+
+# File sistem operasi
+.DS_Store
+Thumbs.db
+
+# File IDE (opsional, tergantung IDE Anda)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

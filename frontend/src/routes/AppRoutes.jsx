@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Box, Typography } from '@mui/material';
 
-import LandingPage from '../pages/LandingPage'; // Impor LandingPage
+import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ProtectedLayout from '../components/layout/ProtectedLayout';
