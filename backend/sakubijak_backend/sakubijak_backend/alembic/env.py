@@ -3,14 +3,14 @@ from alembic import context
 from pyramid.paster import get_appsettings, setup_logging
 from sqlalchemy import engine_from_config
 
-from sakubijak_backend.models.meta import Base
+from sakubijak_backend.models.meta import Base # Pastikan ini benar
+target_metadata = Base.metadata
 
 config = context.config
 
 setup_logging(config.config_file_name)
 
 settings = get_appsettings(config.config_file_name)
-target_metadata = Base.metadata
 
 
 def run_migrations_offline():
