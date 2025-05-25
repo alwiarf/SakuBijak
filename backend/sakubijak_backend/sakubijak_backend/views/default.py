@@ -1,5 +1,3 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\views\default.py
-
 from pyramid.response import Response
 from pyramid.view import view_config
 

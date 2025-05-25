@@ -14,7 +14,8 @@ from pyramid.security import (
 
 class RootACLFactory:
     __acl__ = [
-        (Allow, Authenticated, 'view_self'), # Izinkan semua pengguna terautentikasi untuk permission 'view_self'
+        (Allow, Authenticated, 'view_self'),
+        (Allow, Authenticated, 'edit_self'), # Izinkan semua pengguna terautentikasi untuk permission 'view_self'
         # Tambahkan permission lain di sini nanti
         # (Allow, 'group:admin', ALL_PERMISSIONS), # Contoh untuk admin
     ]
