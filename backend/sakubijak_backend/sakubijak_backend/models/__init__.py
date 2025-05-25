@@ -1,14 +1,19 @@
+# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\models\__init__.py
+
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import configure_mappers
-import zope.sqlalchemy
+from sqlalchemy.orm import configure_mappers # Penting untuk relasi
+import zope.sqlalchemy # Untuk integrasi dengan pyramid_tm
 
-# import or define all models here to ensure they are attached to the
-# Base.metadata prior to any initialization routines
-from .mymodel import MyModel  # flake8: noqa
+# Impor Base dari meta.py agar bisa diakses jika perlu dari package models
+from .meta import Base 
 
-# run configure_mappers after defining all of the models to ensure
-# all relationships can be setup
+# Impor semua model Anda dari mymodel.py agar terdaftar ke Base.metadata
+# Ini adalah baris yang memastikan User, Category, dan Transaction dikenali.
+from .mymodel import User, Category, Transaction 
+
+# configure_mappers() dijalankan setelah semua model didefinisikan dan diimpor
+# untuk memastikan semua relasi (relationships) antar model bisa di-setup dengan benar.
 configure_mappers()
 
 
@@ -57,21 +62,25 @@ def includeme(config):
 
     """
     settings = config.get_settings()
-    settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'
+    
+    # Konfigurasi untuk pyramid_tm agar menggunakan transaction manager secara eksplisit
+    # Pastikan baris ini ada untuk integrasi yang benar dengan request.dbsession
+    if 'tm.manager_hook' not in settings:
+        settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'
 
-    # use pyramid_tm to hook the transaction lifecycle to the request
+    # Menggunakan pyramid_tm untuk mengaitkan siklus hidup transaksi dengan request
     config.include('pyramid_tm')
 
-    # use pyramid_retry to retry a request when transient exceptions occur
-    config.include('pyramid_retry')
+    # Baris ini bisa di-uncomment jika Anda ingin menggunakan pyramid_retry dan sudah menginstalnya
+    # config.include('pyramid_retry')
 
     session_factory = get_session_factory(get_engine(settings))
     config.registry['dbsession_factory'] = session_factory
 
-    # make request.dbsession available for use in Pyramid
+    # Membuat request.dbsession tersedia untuk digunakan dalam view Pyramid
     config.add_request_method(
-        # r.tm is the transaction manager used by pyramid_tm
+        # r.tm adalah transaction manager yang digunakan oleh pyramid_tm
         lambda r: get_tm_session(session_factory, r.tm),
         'dbsession',
-        reify=True
+        reify=True # dbsession akan dibuat sekali per request
     )
