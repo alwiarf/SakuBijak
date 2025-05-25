@@ -1,41 +1,27 @@
-// src/features/categories/categorySlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import apiClient from '../../services/apiClient'; // Menggunakan apiClient yang sudah ada
+import apiClient from '../../services/apiClient'; // Menggunakan apiClient yang sudah ada
 
 const initialState = {
   categories: [],
   isLoading: false,
   isError: false,
-  isSuccess: false, // Untuk menandakan operasi individu sukses
+  isSuccess: false, // Untuk menandakan operasi CUD individu sukses
   message: '',
 };
 
-// --- Async Thunks untuk Kategori ---
+// --- Async Thunks untuk Kategori dengan Panggilan API Sebenarnya ---
 
 // 1. Fetch Categories
 export const fetchCategories = createAsyncThunk(
   'categories/fetchAll',
-  async (_, thunkAPI) => { // Argumen pertama tidak digunakan, jadi pakai _
+  async (_, thunkAPI) => {
     try {
-      // AKTIFKAN KETIKA BACKEND SIAP
-      // const response = await apiClient.get('/api/categories');
-      // return response.data; // Asumsi backend mengembalikan array of categories
-
-      // --- MOCKUP RESPONSE ---
-      await new Promise(resolve => setTimeout(resolve, 700));
-      const mockCategories = [
-        { id: 'cat1', name: 'Makanan & Minuman', description: 'Pengeluaran untuk bahan makanan dan jajan' },
-        { id: 'cat2', name: 'Transportasi', description: 'Bensin, parkir, transportasi umum' },
-        { id: 'cat3', name: 'Tagihan', description: 'Listrik, air, internet, cicilan' },
-        { id: 'cat4', name: 'Hiburan', description: 'Film, konser, langganan streaming' },
-      ];
-      // Ambil dari localStorage jika ada untuk persistensi mockup sederhana
-      const localCategories = localStorage.getItem('mockCategories');
-      return localCategories ? JSON.parse(localCategories) : mockCategories;
-      // --- AKHIR MOCKUP ---
+      const response = await apiClient.get('/api/categories');
+      // Backend mengembalikan: { "categories": [...] }
+      return response.data.categories; 
     } catch (error) {
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -46,24 +32,14 @@ export const fetchCategories = createAsyncThunk(
 // 2. Create Category
 export const createCategory = createAsyncThunk(
   'categories/create',
-  async (categoryData, thunkAPI) => {
+  async (categoryData, thunkAPI) => { // categoryData = { name, description }
     try {
-      // AKTIFKAN KETIKA BACKEND SIAP
-      // const response = await apiClient.post('/api/categories', categoryData);
-      // return response.data; // Asumsi backend mengembalikan kategori yang baru dibuat
-
-      // --- MOCKUP RESPONSE ---
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const newCategory = { id: `cat${Date.now()}`, ...categoryData };
-      // Simpan ke localStorage untuk persistensi mockup
-      const existingCategories = JSON.parse(localStorage.getItem('mockCategories') || '[]');
-      const updatedCategories = [...existingCategories, newCategory];
-      localStorage.setItem('mockCategories', JSON.stringify(updatedCategories));
-      return newCategory;
-      // --- AKHIR MOCKUP ---
+      const response = await apiClient.post('/api/categories', categoryData);
+      // Backend mengembalikan: { "message": "...", "category": {...} }
+      return response.data.category; 
     } catch (error) {
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -74,25 +50,15 @@ export const createCategory = createAsyncThunk(
 // 3. Update Category
 export const updateCategory = createAsyncThunk(
   'categories/update',
-  async (categoryData, thunkAPI) => { // categoryData harus berisi id
+  async (categoryData, thunkAPI) => { // categoryData = { id, name, description }
     try {
-      // AKTIFKAN KETIKA BACKEND SIAP
-      // const response = await apiClient.put(`/api/categories/${categoryData.id}`, categoryData);
-      // return response.data; // Asumsi backend mengembalikan kategori yang sudah diupdate
-
-      // --- MOCKUP RESPONSE ---
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Update di localStorage untuk persistensi mockup
-      let existingCategories = JSON.parse(localStorage.getItem('mockCategories') || '[]');
-      existingCategories = existingCategories.map(cat => 
-        cat.id === categoryData.id ? { ...cat, ...categoryData } : cat
-      );
-      localStorage.setItem('mockCategories', JSON.stringify(existingCategories));
-      return categoryData; // Mengembalikan data yang dikirim untuk update di state
-      // --- AKHIR MOCKUP ---
+      const { id, ...dataToUpdate } = categoryData;
+      const response = await apiClient.put(`/api/categories/${id}`, dataToUpdate);
+      // Backend mengembalikan: { "message": "...", "category": {...} }
+      return response.data.category; 
     } catch (error) {
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -105,21 +71,12 @@ export const deleteCategory = createAsyncThunk(
   'categories/delete',
   async (categoryId, thunkAPI) => {
     try {
-      // AKTIFKAN KETIKA BACKEND SIAP
-      // await apiClient.delete(`/api/categories/${categoryId}`);
-      // return categoryId; // Mengembalikan ID kategori yang dihapus
-
-      // --- MOCKUP RESPONSE ---
-      await new Promise(resolve => setTimeout(resolve, 500));
-      // Hapus dari localStorage untuk persistensi mockup
-      let existingCategories = JSON.parse(localStorage.getItem('mockCategories') || '[]');
-      existingCategories = existingCategories.filter(cat => cat.id !== categoryId);
-      localStorage.setItem('mockCategories', JSON.stringify(existingCategories));
-      return categoryId;
-      // --- AKHIR MOCKUP ---
+      await apiClient.delete(`/api/categories/${categoryId}`);
+      // Backend mengembalikan 204 No Content, jadi kita kembalikan categoryId agar bisa di-filter di reducer
+      return categoryId; 
     } catch (error) {
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -132,7 +89,7 @@ export const categorySlice = createSlice({
   initialState,
   reducers: {
     resetCategoryStatus: (state) => {
-      state.isLoading = false;
+      // state.isLoading tidak direset di sini agar loading fetch tetap terlihat jika ada
       state.isError = false;
       state.isSuccess = false;
       state.message = '';
@@ -143,67 +100,77 @@ export const categorySlice = createSlice({
       // Fetch Categories
       .addCase(fetchCategories.pending, (state) => {
         state.isLoading = true;
+        state.isError = false; // Reset error state saat memulai fetch baru
+        state.message = '';    // Reset message
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories = action.payload;
+        state.categories = action.payload; // Payload adalah array of categories
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
-        state.categories = [];
+        state.message = action.payload || 'Gagal memuat kategori.';
+        state.categories = []; // Kosongkan jika gagal
       })
       // Create Category
       .addCase(createCategory.pending, (state) => {
-        state.isLoading = true;
-        state.isSuccess = false; // Reset isSuccess sebelum operasi baru
+        state.isLoading = true; // Bisa juga state loading spesifik untuk action ini
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(createCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.categories.push(action.payload);
+        state.categories.push(action.payload); // action.payload adalah objek kategori baru
+        state.categories.sort((a, b) => a.name.localeCompare(b.name)); // Jaga urutan
         state.message = 'Kategori berhasil ditambahkan!';
       })
       .addCase(createCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
+        state.message = action.payload || 'Gagal menambahkan kategori.';
       })
       // Update Category
       .addCase(updateCategory.pending, (state) => {
         state.isLoading = true;
         state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
         const index = state.categories.findIndex(cat => cat.id === action.payload.id);
         if (index !== -1) {
-          state.categories[index] = action.payload;
+          state.categories[index] = action.payload; // action.payload adalah objek kategori yang diupdate
         }
+        state.categories.sort((a, b) => a.name.localeCompare(b.name)); // Jaga urutan
         state.message = 'Kategori berhasil diperbarui!';
       })
       .addCase(updateCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
+        state.message = action.payload || 'Gagal memperbarui kategori.';
       })
       // Delete Category
       .addCase(deleteCategory.pending, (state) => {
         state.isLoading = true;
         state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.categories = state.categories.filter(cat => cat.id !== action.payload);
+        state.categories = state.categories.filter(cat => cat.id !== action.payload); // action.payload adalah categoryId
         state.message = 'Kategori berhasil dihapus!';
       })
       .addCase(deleteCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
+        state.message = action.payload || 'Gagal menghapus kategori.';
       });
   },
 });

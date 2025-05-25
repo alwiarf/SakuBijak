@@ -1,44 +1,37 @@
-// src/features/auth/authSlice.js
+// frontend/src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import apiClient from '../../services/apiClient'; // API client kita
+import apiClient from '../../services/apiClient'; // Pastikan path ini benar dan apiClient diaktifkan
 
 // Mengambil data pengguna dari localStorage jika ada (misalnya setelah refresh)
-const user = JSON.parse(localStorage.getItem('user'));
-const token = localStorage.getItem('authToken');
+const userFromStorage = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user'))
+    : null;
+const tokenFromStorage = localStorage.getItem('authToken');
 
 // Definisi initial state
 const initialState = {
-  user: user ? user : null,
-  token: token ? token : null,
-  isAuthenticated: user && token ? true : false,
+  user: userFromStorage,
+  token: tokenFromStorage,
+  isAuthenticated: !!userFromStorage && !!tokenFromStorage,
   isLoading: false,
-  isSuccess: false, // Untuk menandakan operasi sukses (misalnya login/register)
+  isSuccess: false,
   isError: false,
   message: '',
 };
 
-// Async Thunk untuk Registrasi Pengguna
+// Async Thunk untuk Registrasi Pengguna via API
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      // AKTIFKAN INI KETIKA BACKEND SIAP
-      // const response = await apiClient.post('/api/auth/register', userData);
-      // return response.data; // Asumsi backend mengembalikan data pengguna atau pesan sukses
-
-      // --- MOCKUP RESPONSE (HAPUS/GANTI NANTI) ---
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (userData.email === 'test@example.com') { // Contoh email yang sudah terdaftar (mock)
-        return thunkAPI.rejectWithValue('Email sudah terdaftar (mock).');
-      }
-      const mockRegisteredUser = { id: Date.now(), name: userData.name, email: userData.email };
-      // Tidak ada token yang dikembalikan saat registrasi di mockup ini, hanya user data
-      return { user: mockRegisteredUser, message: 'Registrasi berhasil! Silakan login.' };
-      // --- AKHIR MOCKUP ---
-
+      // Menggunakan apiClient untuk memanggil endpoint registrasi di backend
+      const response = await apiClient.post('/api/auth/register', userData);
+      // Asumsi backend mengembalikan objek dengan 'message' dan 'user' saat sukses
+      return response.data;
     } catch (error) {
+      // Menangani error dari respons API atau error jaringan
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -46,39 +39,35 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Async Thunk untuk Login Pengguna
+// Async Thunk untuk Login Pengguna via API
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      // AKTIFKAN INI KETIKA BACKEND SIAP
-      // const response = await apiClient.post('/api/auth/login', userData);
-      // if (response.data && response.data.token) {
-      //   localStorage.setItem('authToken', response.data.token);
-      //   // Asumsi backend juga mengembalikan data pengguna
-      //   // Jika tidak, Anda mungkin perlu memanggil /api/users/me setelah login
-      //   localStorage.setItem('user', JSON.stringify(response.data.user || response.data));
-      //   return response.data;
-      // } else {
-      //   return thunkAPI.rejectWithValue('Login gagal: Token tidak diterima.');
-      // }
-
-      // --- MOCKUP RESPONSE (HAPUS/GANTI NANTI) ---
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (userData.email === 'user@example.com' && userData.password === 'password123') {
-        const mockToken = 'mockToken12345';
-        const mockUser = { id: 1, name: 'User Contoh', email: userData.email };
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        return { user: mockUser, token: mockToken, message: 'Login berhasil!' };
+      // Menggunakan apiClient untuk memanggil endpoint login di backend
+      const response = await apiClient.post('/api/auth/login', userData);
+      // Backend diharapkan mengembalikan message, access_token, token_type, expires_in, user
+      if (response.data && response.data.access_token) {
+        localStorage.setItem('authToken', response.data.access_token);
+        // Simpan hanya data user yang relevan, jangan simpan token di dalam objek user di localStorage
+        const userToStore = {
+            id: response.data.user.id,
+            name: response.data.user.name,
+            email: response.data.user.email
+        };
+        localStorage.setItem('user', JSON.stringify(userToStore));
+        return { // Kembalikan data yang akan disimpan di state Redux
+            user: userToStore,
+            token: response.data.access_token,
+            message: response.data.message || 'Login berhasil!' // Ambil pesan dari respons jika ada
+        };
       } else {
-        return thunkAPI.rejectWithValue('Email atau password salah (mock).');
+        // Jika respons tidak sesuai harapan (misalnya tidak ada access_token)
+        return thunkAPI.rejectWithValue(response.data.error || response.data.message || 'Login gagal: Respons tidak valid dari server.');
       }
-      // --- AKHIR MOCKUP ---
-
     } catch (error) {
       const message =
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
         error.message ||
         error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -88,17 +77,20 @@ export const loginUser = createAsyncThunk(
 
 // Async Thunk untuk Logout Pengguna
 export const logoutUser = createAsyncThunk('auth/logout', async () => {
-  // Di sini Anda bisa memanggil API logout jika ada
-  // await apiClient.post('/api/auth/logout');
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('user');
+  try {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  } catch (error) {
+     localStorage.removeItem('authToken');
+     localStorage.removeItem('user');
+     console.error("Error during API logout, client-side cleanup performed.", error);
+  }
 });
 
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Reset state ke initial state atau state tertentu
     resetAuthStates: (state) => {
       state.isLoading = false;
       state.isSuccess = false;
@@ -111,22 +103,29 @@ export const authSlice = createSlice({
       // Kasus untuk Registrasi
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        // state.user = action.payload.user; // User tidak login otomatis setelah registrasi di flow ini
-        state.message = action.payload.message || 'Registrasi berhasil!';
+        // Pesan dari backend (action.payload.message) akan digunakan
+        state.message = action.payload.message || 'Registrasi berhasil! Silakan login.';
+        // User tidak otomatis login, jadi state.user, state.token, dan state.isAuthenticated tidak diubah di sini
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload; // Pesan error dari rejectWithValue
-        state.user = null;
+        state.message = action.payload || 'Registrasi gagal.'; // Pesan error dari rejectWithValue
+        state.user = null; // Pastikan user null jika registrasi gagal
       })
       // Kasus untuk Login
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.message = '';
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -139,17 +138,31 @@ export const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload; // Pesan error dari rejectWithValue
+        state.message = action.payload || 'Login gagal.';
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;
       })
       // Kasus untuk Logout
+      .addCase(logoutUser.pending, (state) => { // Tambahkan pending state untuk logout jika ada operasi async
+        state.isLoading = true;
+      })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;
-        state.message = 'Logout berhasil!';
+        state.isLoading = false;
+        state.isSuccess = true; // Menandakan logout sukses
+        state.message = 'Anda telah berhasil logout.';
+      })
+      .addCase(logoutUser.rejected, (state, action) => { // Jika logout API gagal dan Anda ingin menanganinya
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload || 'Logout gagal.';
+        // Meskipun logout API gagal, state user, isAuthenticated, token tetap direset karena localStorage sudah dibersihkan.
+        state.user = null;
+        state.isAuthenticated = false;
+        state.token = null;
       });
   },
 });

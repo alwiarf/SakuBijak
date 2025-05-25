@@ -54,8 +54,8 @@ def main(global_config, **settings):
         config.set_authorization_policy(authz_policy)
         config.set_root_factory(RootACLFactory)
 
-        # (Opsional) Konfigurasi CORS
-        # ... (kode CORS Anda bisa diletakkan di sini jika perlu) ...
+        # Konfigurasi CORS
+        config.include('.cors_tween')
 
         config.scan() 
         
