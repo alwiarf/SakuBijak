@@ -12,7 +12,15 @@ const getTodayDate = () => {
 
 const initialState = {
   transactions: [],
+  dashboardSummary: {
+    total_expenses_this_month: 0,
+    latest_transactions: [],
+    top_category_this_month: { name: 'N/A', total: 0 },
+    total_transactions_this_month: 0,
+    expenses_per_category: [], // Tambahkan field ini
+  },
   isLoading: false,
+  isLoadingSummary: false,
   isError: false,
   isSuccess: false,
   message: '',
@@ -157,6 +165,30 @@ export const deleteTransaction = createAsyncThunk(
   }
 );
 
+//Dashboard Summary
+export const fetchDashboardSummary = createAsyncThunk(
+  'transactions/fetchDashboardSummary',
+  async (_, thunkAPI) => {
+    try {
+      const response = await apiClient.get('/api/dashboard/summary');
+      console.log("Dashboard Summary API Response:", response.data); // Log untuk debugging
+      // Pastikan data yang diterima dari API memiliki field expenses_per_category
+      // Jika tidak, default ke array kosong untuk menghindari error di frontend
+      const summaryData = response.data;
+      if (!summaryData.expenses_per_category) {
+        summaryData.expenses_per_category = [];
+      }
+      return summaryData;
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const transactionSlice = createSlice({
   name: 'transactions',
   initialState,
@@ -243,9 +275,29 @@ export const transactionSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload || 'Gagal menghapus transaksi.';
+      })
+
+      // Fetch Dashboard Summary
+      .addCase(fetchDashboardSummary.pending, (state) => {
+        state.isLoadingSummary = true; 
+        state.isError = false; // Reset error state for dashboard
+        state.message = '';
+      })
+      .addCase(fetchDashboardSummary.fulfilled, (state, action) => {
+        state.isLoadingSummary = false;
+        state.dashboardSummary = action.payload; 
+      })
+      .addCase(fetchDashboardSummary.rejected, (state, action) => {
+        state.isLoadingSummary = false;
+        state.isError = true; // Set error state for dashboard
+        state.message = action.payload || 'Gagal memuat ringkasan dashboard.';
+        // Reset ke nilai default jika gagal, termasuk expenses_per_category
+        state.dashboardSummary = { ...initialState.dashboardSummary };
       });
   },
 });
+
+
 
 export const { resetTransactionStatus } = transactionSlice.actions;
 export default transactionSlice.reducer;

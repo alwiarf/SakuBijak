@@ -41,7 +41,7 @@ const formatDate = (dateString) => {
     const date = new Date(dateString + 'T00:00:00');
     if (isNaN(date.getTime())) return "Tanggal Tidak Valid";
     return date.toLocaleDateString('id-ID', options);
-  } catch (e) { return "Tanggal Error"; }
+  } catch { return "Tanggal Error"; }
 };
 
 const TransactionsPage = () => {
@@ -200,7 +200,7 @@ const TransactionsPage = () => {
     }
   }, [dispatch, currentTransaction]);
 
-  const handleCloseNotification = useCallback((event, reason) => {
+  const handleCloseNotification = useCallback(() => {
     setNotification(prev => ({ ...prev, open: false }));
   }, []);
   

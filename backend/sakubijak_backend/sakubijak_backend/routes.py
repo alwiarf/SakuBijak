@@ -17,3 +17,6 @@ def includeme(config):
     config.add_route('api_transactions_collection', '/api/transactions')
     # TAMBAHKAN RUTE BARU DI BAWAH INI untuk operasi pada satu transaksi
     config.add_route('api_transaction_item', '/api/transactions/{transaction_id}')
+
+    # API Dashboard
+    config.add_route('api_dashboard_summary', '/api/dashboard/summary')
