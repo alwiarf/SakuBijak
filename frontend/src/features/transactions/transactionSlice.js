@@ -41,14 +41,13 @@ export const createTransaction = createAsyncThunk(
   'transactions/create',
   async (transactionDataFromPage, thunkAPI) => { 
     try {
-      // Pastikan console.log ini ada untuk debugging jika masih bermasalah
       console.log("--- Slice: Menerima data dari halaman (createTransaction) ---", transactionDataFromPage);
 
       const dateToSend = transactionDataFromPage.date && transactionDataFromPage.date.trim() !== '' 
                          ? transactionDataFromPage.date 
-                         : getTodayDate(); // Implementasi getTodayDate
+                         : getTodayDate();
 
-      // Validasi dan penyesuaian payload sebelum dikirim ke backend
+      // Validasi dasar di frontend sebelum mengirim ke backend
       const amountValue = parseFloat(transactionDataFromPage.amount);
       if (isNaN(amountValue) || amountValue <= 0) {
         return thunkAPI.rejectWithValue('Jumlah (amount) harus berupa angka positif.');
@@ -60,12 +59,14 @@ export const createTransaction = createAsyncThunk(
         return thunkAPI.rejectWithValue('Deskripsi tidak boleh kosong.');
       }
 
-
+      // Bentuk payload yang akan dikirim ke backend
+      // Pastikan amount dan category_id dikirim sebagai string untuk konsistensi
+      // dengan bagaimana backend Anda mungkin mengharapkannya sebelum parsing internal
       const payload = {
         description: transactionDataFromPage.description.trim(),
-        amount: String(transactionDataFromPage.amount), // Kirim sebagai string, backend akan parse ke float/numeric
+        amount: String(transactionDataFromPage.amount), // Kirim sebagai string
         date: dateToSend,
-        category_id: String(transactionDataFromPage.categoryId) // Kirim sebagai string, backend akan parse ke integer
+        category_id: String(transactionDataFromPage.categoryId) // Kirim sebagai string
       };
       console.log("--- Slice: Payload ke Backend (createTransaction) ---", payload);
       
@@ -90,10 +91,12 @@ export const updateTransaction = createAsyncThunk(
       const { id, ...dataToUpdate } = transactionDataFromPage;
       console.log("--- Slice: Menerima data dari halaman (updateTransaction) ---", transactionDataFromPage);
 
-      // Validasi untuk update
-      const amountValue = parseFloat(dataToUpdate.amount);
-      if (dataToUpdate.amount && (isNaN(amountValue) || amountValue <= 0)) {
-         return thunkAPI.rejectWithValue('Jika diupdate, jumlah (amount) harus berupa angka positif.');
+      // Validasi untuk update (hanya jika field tersebut ada di dataToUpdate)
+      if (dataToUpdate.amount) {
+        const amountValue = parseFloat(dataToUpdate.amount);
+        if (isNaN(amountValue) || amountValue <= 0) {
+           return thunkAPI.rejectWithValue('Jika diupdate, jumlah (amount) harus berupa angka positif.');
+        }
       }
       if (dataToUpdate.categoryId && (dataToUpdate.categoryId === '' || dataToUpdate.categoryId === null || typeof dataToUpdate.categoryId === 'undefined')) {
         return thunkAPI.rejectWithValue('Jika diupdate, ID Kategori (categoryId) wajib dipilih.');
@@ -105,17 +108,22 @@ export const updateTransaction = createAsyncThunk(
         return thunkAPI.rejectWithValue('Jika diupdate, format tanggal tidak valid.');
       }
 
-
+      // Siapkan payload, pastikan amount dan category_id sebagai string jika backend mengharapkannya
       const payload = {
-        description: dataToUpdate.description,
-        amount: String(dataToUpdate.amount), // Kirim sebagai string
-        date: dataToUpdate.date,
-        category_id: String(dataToUpdate.categoryId) // Kirim sebagai string
+        description: dataToUpdate.description ? dataToUpdate.description.trim() : undefined,
+        amount: dataToUpdate.amount ? String(dataToUpdate.amount) : undefined,
+        date: dataToUpdate.date ? dataToUpdate.date.trim() : undefined,
+        category_id: dataToUpdate.categoryId ? String(dataToUpdate.categoryId) : undefined
       };
-      // Hapus field yang undefined agar tidak menimpa data yang sudah ada dengan null jika tidak diisi di form edit
+      
+      // Hapus field yang undefined dari payload agar tidak mengirim field kosong
       Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
       
       console.log("--- Slice: Payload ke Backend (updateTransaction) ---", { id, ...payload });
+
+      if (Object.keys(payload).length === 0) {
+        return thunkAPI.rejectWithValue('Tidak ada data yang dikirim untuk diupdate.');
+      }
 
       const response = await apiClient.put(`/api/transactions/${id}`, payload);
       return response.data.transaction; 
