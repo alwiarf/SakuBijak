@@ -43,7 +43,7 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
   - **Delete:** Menghapus kategori.
 - **Ringkasan Pengeluaran:**
   - Menampilkan total pengeluaran dalam periode tertentu.
-  - (Opsional) Visualisasi sederhana pengeluaran per kategori.
+  - Visualisasi sederhana pengeluaran per kategori.
 - **Keamanan:**
   - Autentikasi dasar untuk melindungi data pribadi pengguna.
 
@@ -53,7 +53,7 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
 
 - **Bahasa & Framework:** Python 3.x & Pyramid
 - **Arsitektur API:** RESTful API
-- **Autentikasi:** Basic Authentication
+- **Autentikasi:** JWT Authentication
 - **Testing:** pytest (Target coverage minimal 60% untuk fungsi kritis)
 
 ### Frontend
