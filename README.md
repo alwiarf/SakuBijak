@@ -61,7 +61,7 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
 - **Library/Framework:** React JS (v18+) dengan Functional Components & Hooks
 - **Routing:** React Router DOM (v6+)
 - **State Management:** Redux Toolkit
-- **Styling:** Tailwind CSS
+- **Styling:** MUI
 - **API Client:** Axios
 
 ### Database
