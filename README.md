@@ -20,6 +20,8 @@
   - [Frontend (React JS)](#frontend-react-js)
 - [API Endpoint](#api-endpoint)
 - [Kontribusi](#kontribusi)
+- [Database Schema](#database-schema)
+- [Evaluasi Spesifikasi](#evaluasi-spesifikasi)
 
 ## Deskripsi Proyek
 
@@ -59,6 +61,7 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
 ### Frontend
 
 - **Library/Framework:** React JS (v18+) dengan Functional Components & Hooks
+- **Build Tool:** Vite
 - **Routing:** React Router DOM (v6+)
 - **State Management:** Redux Toolkit
 - **Styling:** MUI
@@ -151,29 +154,131 @@ Pastikan kamu memiliki perangkat lunak berikut terinstal di sistemmu:
 
 ## API Endpoint
 
-Berikut adalah daftar endpoint utama yang disediakan oleh backend SakuBijak:
+### Autentikasi
 
-- **Autentikasi:**
-  - `POST /api/auth/register`: Registrasi pengguna baru.
-  - `POST /api/auth/login`: Login pengguna.
-- **Users:**
-  - `GET /api/users/me`: (Protected) Mendapatkan detail user yang sedang login.
-  - `PUT /api/users/me`: (Protected) Memperbarui profil user.
-- **Categories (Semua Protected):**
-  - `POST /api/categories`: Membuat kategori baru.
-  - `GET /api/categories`: Mendapatkan semua kategori milik user.
-  - `GET /api/categories/{category_id}`: Mendapatkan detail satu kategori.
-  - `PUT /api/categories/{category_id}`: Memperbarui kategori.
-  - `DELETE /api/categories/{category_id}`: Menghapus kategori.
-- **Transactions (Semua Protected):**
-  - `POST /api/transactions`: Membuat transaksi baru.
-  - `GET /api/transactions`: Mendapatkan semua transaksi (opsional: filter by date, category).
-  - `GET /api/transactions/{transaction_id}`: Mendapatkan detail satu transaksi.
-  - `PUT /api/transactions/{transaction_id}`: Memperbarui transaksi.
-  - `DELETE /api/transactions/{transaction_id}`: Menghapus transaksi.
+- **POST /api/auth/register**: Registrasi pengguna baru.
+- **POST /api/auth/login**: Login pengguna dan mendapatkan token JWT.
+- **GET /api/users/me**: Mendapatkan detail pengguna yang sedang login.
+
+### Kategori
+
+- **POST /api/categories**: Menambah kategori pengeluaran baru.
+- **GET /api/categories**: Mendapatkan daftar kategori.
+- **GET /api/categories/{category_id}**: Mendapatkan detail kategori tertentu.
+- **PUT /api/categories/{category_id}**: Memperbarui kategori tertentu.
+- **DELETE /api/categories/{category_id}**: Menghapus kategori tertentu.
+
+### Transaksi
+
+- **POST /api/transactions**: Menambah transaksi pengeluaran baru.
+- **GET /api/transactions**: Mendapatkan daftar transaksi dengan filter.
+- **GET /api/transactions/{transaction_id}**: Mendapatkan detail transaksi tertentu.
+- **PUT /api/transactions/{transaction_id}**: Memperbarui transaksi tertentu.
+- **DELETE /api/transactions/{transaction_id}**: Menghapus transaksi tertentu.
+
+### Dashboard
+
+- **GET /api/dashboard/summary**: Mendapatkan ringkasan data untuk dashboard pengguna.
 
 *(Pastikan untuk mengawali semua endpoint ini dengan base URL API backend, misalnya `http://localhost:6543`)*
 
 ## Kontribusi
 
 Saat ini, proyek ini dikembangkan sebagai tugas individu. Namun, saran dan masukan selalu diterima. Jika kamu menemukan bug atau memiliki ide untuk perbaikan, silakan buat *Issue* di repositori GitHub ini.
+
+## Database Schema
+
+Berikut adalah skema database yang digunakan dalam aplikasi SakuBijak:
+
+### Tabel `users`
+| Kolom          | Tipe Data       | Deskripsi                          |
+|----------------|-----------------|------------------------------------|
+| `id`          | Integer         | Primary key                        |
+| `name`        | String(100)     | Nama pengguna                      |
+| `email`       | String(100)     | Email pengguna (unik)              |
+| `hashed_password` | String(255) | Password yang sudah di-hash        |
+| `created_at`  | DateTime        | Waktu registrasi pengguna          |
+| `updated_at`  | DateTime        | Waktu terakhir pembaruan data      |
+
+### Tabel `categories`
+| Kolom          | Tipe Data       | Deskripsi                          |
+|----------------|-----------------|------------------------------------|
+| `id`          | Integer         | Primary key                        |
+| `name`        | String(100)     | Nama kategori                      |
+| `description` | Text            | Deskripsi kategori (opsional)      |
+| `user_id`     | Integer         | Foreign key ke tabel `users`       |
+| `created_at`  | DateTime        | Waktu pembuatan kategori           |
+| `updated_at`  | DateTime        | Waktu terakhir pembaruan data      |
+
+### Tabel `transactions`
+| Kolom          | Tipe Data       | Deskripsi                          |
+|----------------|-----------------|------------------------------------|
+| `id`          | Integer         | Primary key                        |
+| `description` | String(255)     | Deskripsi transaksi (opsional)     |
+| `amount`      | Numeric(15,2)   | Jumlah pengeluaran                 |
+| `date`        | Date            | Tanggal transaksi                  |
+| `user_id`     | Integer         | Foreign key ke tabel `users`       |
+| `category_id` | Integer         | Foreign key ke tabel `categories`  |
+| `created_at`  | DateTime        | Waktu pembuatan transaksi          |
+| `updated_at`  | DateTime        | Waktu terakhir pembaruan data      |
+
+### Catatan
+- Kolom yang bersifat opsional, seperti `description` pada tabel `categories` dan `transactions`, digunakan untuk memberikan fleksibilitas kepada pengguna. Misalnya, pengguna dapat memilih untuk tidak memberikan deskripsi pada kategori atau transaksi tertentu jika tidak diperlukan.
+
+## Evaluasi Spesifikasi
+
+### Backend
+- **Bahasa & Framework:** Python 3.x & Pyramid → **Sudah diterapkan**
+- **Arsitektur API:** RESTful API → **Sudah diterapkan**
+- **Autentikasi:** JWT Authentication → **Sudah diterapkan**
+- **Testing:** pytest (Target coverage minimal 60% untuk fungsi kritis) **sudah di evaluasi**
+
+### Frontend
+- **Library/Framework:** React JS (v18+) dengan Functional Components & Hooks → **Sudah diterapkan**
+- **Build Tool:** Vite → **Sudah diterapkan**
+- **Routing:** React Router DOM (v6+) → **Sudah diterapkan**
+- **State Management:** Redux Toolkit → **Sudah diterapkan**
+- **Styling:** MUI → **Sudah diterapkan**
+- **API Client:** Axios → **Sudah diterapkan**
+
+### Database
+- **Sistem Manajemen Database Relasional (RDBMS):** PostgreSQL → **Sudah diterapkan**
+
+### Bukti Evaluasi
+
+Berikut adalah hasil evaluasi pengujian menggunakan pytest:
+
+```plaintext
+======================================================== test session starts ========================================================
+platform win32 -- Python 3.11.11, pytest-8.3.5, pluggy-1.6.0 -- D:\Project\SakuBijak\backend\env\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\SakuBijak\backend\sakubijak_backend
+configfile: pytest.ini
+testpaths: sakubijak_backend
+plugins: cov-6.1.1
+collected 18 items
+
+sakubijak_backend/tests_views.py::TestModels::test_category_model PASSED                                                       [  5%]
+sakubijak_backend/tests_views.py::TestModels::test_transaction_model PASSED                                                    [ 11%]
+sakubijak_backend/tests_views.py::TestModels::test_user_model PASSED                                                           [ 16%]
+sakubijak_backend/tests_views.py::TestAuthentication::test_login_invalid_credentials PASSED                                    [ 22%]
+sakubijak_backend/tests_views.py::TestAuthentication::test_login_success PASSED                                                [ 27%]
+sakubijak_backend/tests_views.py::TestAuthentication::test_register_duplicate_email PASSED                                     [ 33%]
+sakubijak_backend/tests_views.py::TestAuthentication::test_register_success SKIPPED (Skipping test_register_success due to...) [ 38%]
+sakubijak_backend/tests_views.py::TestCategoryAPI::test_create_category PASSED                                                 [ 44%]
+sakubijak_backend/tests_views.py::TestCategoryAPI::test_delete_category PASSED                                                 [ 50%]
+sakubijak_backend/tests_views.py::TestCategoryAPI::test_get_category PASSED                                                    [ 55%]
+sakubijak_backend/tests_views.py::TestCategoryAPI::test_list_categories PASSED                                                 [ 61%]
+sakubijak_backend/tests_views.py::TestCategoryAPI::test_update_category PASSED                                                 [ 66%]
+sakubijak_backend/tests_views.py::TestTransactionAPI::test_create_transaction PASSED                                           [ 72%]
+sakubijak_backend/tests_views.py::TestTransactionAPI::test_delete_transaction PASSED                                           [ 77%]
+sakubijak_backend/tests_views.py::TestTransactionAPI::test_get_transaction PASSED                                              [ 83%]
+sakubijak_backend/tests_views.py::TestTransactionAPI::test_list_transactions PASSED                                            [ 88%]
+sakubijak_backend/tests_views.py::TestTransactionAPI::test_update_transaction PASSED                                           [ 94%]
+sakubijak_backend/tests_views.py::TestDashboard::test_dashboard_summary PASSED
+```
+
+Bukti gambar hasil pengujian di bawah ini.
+![Bukti Pytest](./backend/sakubijak_backend/pytest.png)
+
+*Gambar 1. Tampilan Pytest*
