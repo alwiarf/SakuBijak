@@ -1,17 +1,15 @@
-// src/styles/theme.js
 import { createTheme, alpha } from '@mui/material/styles'; // Impor alpha untuk opacity
 import { red, blueGrey } from '@mui/material/colors';
 
-// Tema ini dirancang untuk memberikan nuansa modern dan bersih, terinspirasi dari Google Material Design.
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1A73E8', // Biru khas Google
-      light: alpha('#1A73E8', 0.1), // Warna light untuk background NavButton aktif & Avatar
-      contrastText: '#ffffff', // Teks putih untuk kontras di atas primary.main
+      main: '#1A73E8', 
+      light: alpha('#1A73E8', 0.1),
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#FF6F00', // Oranye sebagai warna aksen
+      main: '#FF6F00', 
       light: alpha('#FF6F00', 0.1),
       contrastText: '#ffffff',
     },
@@ -197,8 +195,6 @@ const theme = createTheme({
     MuiAvatar: { // Styling default untuk Avatar
         styleOverrides: {
             root: {
-                // backgroundColor: '#1A73E8', // Dihapus agar bisa di-override per instance
-                // color: '#ffffff', // Dihapus agar bisa di-override per instance
             }
         }
     },
@@ -233,16 +229,11 @@ const theme = createTheme({
                 fontSize: '0.75rem',
                 height: '24px',
             },
-            // Anda bisa menambahkan style untuk variant atau color tertentu
-            // colorPrimary: { backgroundColor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }
         }
     },
     MuiListItem: { // Styling untuk ListItem
         styleOverrides: {
             root: {
-                // '&:hover': { // Efek hover bisa ditambahkan di sini secara global jika diinginkan
-                //     backgroundColor: alpha('#202124', 0.03),
-                // }
             }
         }
     },

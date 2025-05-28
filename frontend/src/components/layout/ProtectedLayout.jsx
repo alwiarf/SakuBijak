@@ -1,4 +1,3 @@
-// src/components/layout/ProtectedLayout.jsx
 import React from 'react';
 import { useNavigate, Link as RouterLink, NavLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -123,7 +122,7 @@ const ProtectedLayout = ({ children }) => {
             disableGutters
             sx={{ 
                 minHeight: { xs: 56, sm: 64 },
-                px: { xs: 1, sm: 2, md: 3 } // Padding horizontal untuk Toolbar
+                px: { xs: 1, sm: 2, md: 3 }
             }}
         >
             {/* Grup Kiri: Logo dan Judul Aplikasi */}
@@ -135,7 +134,6 @@ const ProtectedLayout = ({ children }) => {
                 alignItems: 'center', 
                 textDecoration: 'none', 
                 color: 'inherit',
-                // mr: { md: 2 } // Margin kanan untuk memisahkan dari navigasi tengah di desktop
               }}
             >
               <AccountBalanceWalletIcon sx={{ color: 'primary.main', mr: 1, fontSize: '28px' }} /> 
@@ -161,8 +159,6 @@ const ProtectedLayout = ({ children }) => {
               spacing={1}
               sx={{ 
                 display: { xs: 'none', md: 'flex' },
-                // justifyContent: 'center', // Dihapus agar tidak "memakan" ruang yang seharusnya untuk spacer
-                // mx: 'auto' // Ini akan memusatkan stack jika parentnya flex dan ada ruang
               }}
             >
               {navItems.map((item) => (
@@ -239,7 +235,7 @@ const ProtectedLayout = ({ children }) => {
               <Menu // Menu untuk user mobile (jika diklik avatar mobile)
                 sx={{ mt: '40px' }}
                 id="menu-appbar-user-mobile"
-                anchorEl={anchorElUser} // Menggunakan anchorElUser yang sama
+                anchorEl={anchorElUser}
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                 keepMounted
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}

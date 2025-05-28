@@ -1,5 +1,3 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\views\api_transactions.py
-
 from pyramid.view import view_config
 from pyramid.httpexceptions import (
     HTTPBadRequest,
@@ -11,11 +9,10 @@ from pyramid.httpexceptions import (
 )
 import transaction
 import datetime
-# from decimal import Decimal # Impor jika Anda menggunakan tipe Decimal di model
 
-from ..models import Transaction, Category, User # Impor model yang relevan
+from ..models import Transaction, Category, User 
 
-# Permission string yang sudah kita definisikan
+# Permission string yang sudah definisikan
 VIEW_PERMISSION = 'view_self'
 EDIT_PERMISSION = 'edit_self'
 
@@ -89,7 +86,7 @@ def create_transaction_view(request):
 
     new_transaction = Transaction(
         description=description.strip(), # Trim spasi
-        amount=amount, # Simpan sebagai tipe data numerik yang sesuai di model Anda
+        amount=amount,
         date=date_obj,
         user_id=user_id,
         category_id=category_id_int
@@ -128,8 +125,6 @@ def create_transaction_view(request):
     permission=VIEW_PERMISSION
 )
 def get_transactions_view(request):
-    # ... (kode get_transactions_view Anda sudah cukup baik, pastikan amount dikonversi ke float jika dari Numeric) ...
-    # Saya akan salin versi Anda dengan sedikit penyesuaian jika perlu
     user_id = request.authenticated_userid
     if not user_id:
         raise HTTPForbidden(json_body={'error': 'Autentikasi diperlukan.'})
@@ -153,7 +148,6 @@ def get_transactions_view(request):
                 cat_id = int(category_id_filter)
                 category = request.dbsession.query(Category).filter_by(id=cat_id, user_id=user_id).first()
                 if category: query = query.filter(Transaction.category_id == cat_id)
-                # else: pass # Abaikan filter jika kategori tidak valid untuk user ini
             except ValueError:
                 raise HTTPBadRequest(json_body={'error': 'Format category_id tidak valid.'})
 
@@ -190,8 +184,6 @@ def get_transactions_view(request):
     permission=VIEW_PERMISSION
 )
 def get_transaction_detail_view(request):
-    # ... (kode get_transaction_detail_view Anda sudah cukup baik, pastikan amount dikonversi ke float) ...
-    # Saya akan salin versi Anda dengan sedikit penyesuaian jika perlu
     user_id = request.authenticated_userid
     if not user_id:
         raise HTTPForbidden(json_body={'error': 'Autentikasi diperlukan.'})
@@ -207,7 +199,7 @@ def get_transaction_detail_view(request):
     try:
         transaction_result = (
             request.dbsession.query(Transaction, Category.name.label("category_name"))
-            .join(Category, Transaction.category_id == Category.id) # Pastikan join condition benar
+            .join(Category, Transaction.category_id == Category.id)
             .filter(Transaction.id == transaction_id, Transaction.user_id == user_id)
             .first()
         )
@@ -223,7 +215,7 @@ def get_transaction_detail_view(request):
             'updated_at': t.updated_at.isoformat() if t.updated_at else None,
         }
         return HTTPOk(json_body={'transaction': transaction_data})
-    except HTTPNotFound: raise # Re-raise jika sudah HTTPNotFound
+    except HTTPNotFound: raise 
     except Exception as e:
         print(f"Error saat mengambil detail transaksi: {e}")
         request.response.status_code = 500
@@ -237,8 +229,6 @@ def get_transaction_detail_view(request):
     permission=EDIT_PERMISSION
 )
 def update_transaction_view(request):
-    # ... (kode update_transaction_view Anda sudah cukup baik) ...
-    # Pastikan validasi input dan konversi tipe data konsisten.
     user_id = request.authenticated_userid
     if not user_id:
         raise HTTPForbidden(json_body={'error': 'Autentikasi diperlukan.'})
@@ -319,8 +309,6 @@ def update_transaction_view(request):
     permission=EDIT_PERMISSION
 )
 def delete_transaction_view(request):
-    # ... (kode delete_transaction_view Anda sudah cukup baik) ...
-    # Saya akan salin versi Anda dengan sedikit penyesuaian jika perlu
     user_id = request.authenticated_userid
     if not user_id:
         raise HTTPForbidden(json_body={'error': 'Autentikasi diperlukan.'})

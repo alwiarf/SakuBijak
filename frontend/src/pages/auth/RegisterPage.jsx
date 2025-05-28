@@ -1,4 +1,3 @@
-// File: src/pages/auth/RegisterPage.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -46,7 +45,7 @@ const RegisterPage = () => {
   const { 
     isLoading, 
     isError, 
-    isSuccess, // isSuccess dari Redux menandakan thunk berhasil (bukan berarti user langsung login)
+    isSuccess,
     message 
   } = useSelector((state) => state.auth);
 
@@ -59,14 +58,14 @@ const RegisterPage = () => {
     }
 
     // Jika registrasi sukses (berdasarkan state Redux)
-    if (isSuccess && message.includes('Registrasi berhasil')) { // Lebih spesifik untuk pesan sukses registrasi
+    if (isSuccess && message.includes('Registrasi berhasil')) {
       setSnackbarMessage(message);
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
       // Arahkan ke halaman login setelah Snackbar tampil
       setTimeout(() => {
         navigate('/login');
-        dispatch(resetAuthStates()); // Reset state sukses setelah navigasi
+        dispatch(resetAuthStates()); 
       }, 2500); // Beri waktu Snackbar untuk tampil
     }
   }, [isError, isSuccess, message, navigate, dispatch]);
@@ -223,7 +222,7 @@ const RegisterPage = () => {
               variant="contained"
               color="secondary" 
               sx={{ 
-                mt: 3, // Margin atas disesuaikan
+                mt: 3, 
                 mb: 2, 
                 py: 1.5, 
                 position: 'relative',
@@ -259,7 +258,7 @@ const RegisterPage = () => {
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={4000} // Durasi bisa disesuaikan
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         TransitionComponent={SlideTransition}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}

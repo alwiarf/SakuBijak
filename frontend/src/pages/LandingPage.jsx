@@ -1,4 +1,3 @@
-// src/pages/LandingPage.jsx
 import React from 'react';
 import { Box, Container, Typography, Button, Grid, Paper, Avatar } from '@mui/material';
 import { styled, alpha, useTheme } from '@mui/material/styles';
@@ -147,7 +146,7 @@ const LandingPage = () => {
       <HeroSectionStyled>
         <Container 
           maxWidth="md" 
-          sx={{ // Tambahkan sx di sini untuk membuat Container menjadi flex column yang memusatkan itemnya
+          sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center'

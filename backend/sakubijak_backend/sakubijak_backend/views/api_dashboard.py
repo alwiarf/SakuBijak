@@ -96,16 +96,13 @@ def get_dashboard_summary_view(request):
         {'name': cat_name, 'total': float(total)} 
         for cat_name, total in expenses_per_category_query
     ]
-    # Pastikan ada data dummy jika kosong agar frontend bisa render chart kosong dengan baik
-    # if not expenses_per_category:
-    #     expenses_per_category = [] # Biarkan kosong jika memang tidak ada data
 
     summary_data = {
         'total_expenses_this_month': total_expenses,
         'latest_transactions': latest_transactions,
         'top_category_this_month': top_category,
         'total_transactions_this_month': total_transactions_count,
-        'expenses_per_category': expenses_per_category # Tambahkan data baru
+        'expenses_per_category': expenses_per_category
     }
 
     return HTTPOk(json_body=summary_data)

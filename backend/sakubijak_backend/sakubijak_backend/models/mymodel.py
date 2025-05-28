@@ -1,5 +1,3 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\models\mymodel.py
-
 import datetime
 from sqlalchemy import (
     Column,
@@ -10,10 +8,10 @@ from sqlalchemy import (
     DateTime,
     Numeric,
     Date,
-    Index, # Jika Anda ingin menambahkan index secara eksplisit di luar definisi kolom
+    Index, 
 )
-from sqlalchemy.orm import relationship # Untuk mendefinisikan relasi antar tabel
-from .meta import Base  # Impor Base dari meta.py di direktori yang sama
+from sqlalchemy.orm import relationship 
+from .meta import Base 
 
 class User(Base):
     __tablename__ = 'users'
@@ -25,9 +23,6 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-    # Relasi: Satu User memiliki banyak Category dan banyak Transaction
-    # `back_populates` harus cocok dengan nama properti relasi di model lawan
-    # `cascade="all, delete-orphan"` berarti jika User dihapus, kategori dan transaksinya juga akan dihapus.
     categories = relationship("Category", back_populates="user_owner", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user_owner", cascade="all, delete-orphan")
 
@@ -59,7 +54,6 @@ class Transaction(Base):
     description = Column(String(255), nullable=True) # Deskripsi bisa opsional
     amount = Column(Numeric(15, 2), nullable=False) # Presisi 15 digit, 2 desimal untuk mata uang
     date = Column(Date, nullable=False, default=datetime.date.today, index=True)
-    # type = Column(String(50), default='expense', nullable=False) # Jika hanya pengeluaran, ini bisa dihilangkan
     
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False, index=True) # Kategori wajib untuk transaksi
@@ -73,6 +67,3 @@ class Transaction(Base):
 
     def __repr__(self):
         return f"<Transaction(id={self.id}, description='{self.description}', amount={self.amount}, date='{self.date}')>"
-
-# Contoh jika Anda ingin menambahkan index gabungan secara eksplisit (opsional):
-# Index('ix_user_category_name', Category.user_id, Category.name, unique=True) # Contoh index untuk nama kategori unik per user

@@ -3,7 +3,7 @@ from pyramid.authentication import CallbackAuthenticationPolicy
 from pyramid.interfaces import IAuthenticationPolicy
 from zope.interface import implementer
 
-from .models import User # Impor model User Anda
+from .models import User
 
 from pyramid.security import (
     Allow,
@@ -49,8 +49,6 @@ class JWTAuthenticationPolicy(CallbackAuthenticationPolicy):
                 self.secret_key,
                 algorithms=[self.algorithm]
             )
-            # 'exp' (expiration time) sudah otomatis divalidasi oleh jwt.decode()
-            # Jika token kedaluwarsa atau signature tidak valid, akan raise exception.
 
             user_id = payload.get('user_id')
             return user_id # Kembalikan user_id dari payload token
@@ -68,29 +66,12 @@ class JWTAuthenticationPolicy(CallbackAuthenticationPolicy):
             request.jwt_error = f'Error saat memproses token: {e}'
             return None
 
-    # Callback untuk CallbackAuthenticationPolicy
-    # Fungsi ini akan dipanggil oleh Pyramid untuk mendapatkan principals
-    # setelah unauthenticated_userid mengembalikan userid.
     def callback(self, userid, request):
-        # Di sini kita bisa melakukan query ke database untuk mendapatkan detail user
-        # atau informasi grup/permission jika diperlukan.
-        # Untuk sekarang, kita hanya mengembalikan userid sebagai principal utama.
-        # Pyramid akan menggunakan ini untuk menentukan apakah pengguna terautentikasi.
-        
-        # Jika user tidak ditemukan di DB berdasarkan userid dari token (misalnya user dihapus setelah token dibuat),
-        # kita harus mengembalikan None agar dianggap tidak terautentikasi.
-        # user = request.dbsession.query(User).filter_by(id=userid).first()
-        # if not user:
-        #     return None # Pengguna tidak ditemukan atau tidak aktif lagi
-            
-        # Untuk sistem permission yang lebih kompleks, Anda bisa menambahkan grup di sini.
-        # Contoh: return [userid, 'group:editors']
         if userid:
             return [userid] # Mengindikasikan pengguna terautentikasi dengan userid tersebut
         return None
 
     # Metode remember dan forget tidak relevan untuk autentikasi stateless JWT
-    # karena token dikelola oleh klien. Kita implementasikan sebagai no-op.
     def remember(self, request, userid, **kw):
         return []
 
@@ -101,8 +82,6 @@ class RootACLFactory:
     __acl__ = [
         (Allow, Authenticated, 'view_self'),
         (Allow, Authenticated, 'edit_self'), # Izinkan semua pengguna terautentikasi untuk permission 'view_self'
-        # Tambahkan permission lain di sini nanti
-        # (Allow, 'group:admin', ALL_PERMISSIONS), # Contoh untuk admin
     ]
 
     def __init__(self, request):

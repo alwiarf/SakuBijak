@@ -31,10 +31,10 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import {
   fetchCategories,
   createCategory,
-  updateCategory, // Akan kita pastikan penggunaannya benar
-  deleteCategory, // Akan kita pastikan penggunaannya benar
+  updateCategory, 
+  deleteCategory, 
   resetCategoryStatus,
-} from '../features/categories/categorySlice'; // Pastikan path ini benar
+} from '../features/categories/categorySlice'; 
 
 // Transisi untuk Snackbar
 function SlideTransition(props) {
@@ -44,7 +44,7 @@ function SlideTransition(props) {
 const CategoriesPage = () => {
   const dispatch = useDispatch();
   const { categories, isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.categories // Pastikan selector ini benar
+    (state) => state.categories 
   );
 
   // State lokal untuk form dialog
@@ -57,7 +57,6 @@ const CategoriesPage = () => {
 
   // State lokal untuk dialog konfirmasi hapus
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  // categoryToDelete tidak lagi diperlukan karena kita akan menggunakan currentCategory
 
   // State lokal untuk Snackbar notifikasi
   const [notification, setNotification] = useState({
@@ -91,7 +90,7 @@ const CategoriesPage = () => {
         }
       }
     }
-  }, [isError, isSuccess, message, dispatch, openFormDialog, openDeleteDialog]); // Tambahkan openDeleteDialog
+  }, [isError, isSuccess, message, dispatch, openFormDialog, openDeleteDialog]); 
 
 
   const handleOpenFormDialog = (category = null) => {
@@ -310,7 +309,7 @@ const CategoriesPage = () => {
           <Button onClick={handleCloseFormDialog} disabled={isLoading}>Batal</Button>
           <Button type="submit" variant="contained" disabled={isLoading}>
             {/* Tampilkan spinner di tombol jika isLoading dari Redux (untuk CUD) true */}
-            {isLoading && !categories.length /* Ini kondisi untuk fetch awal, bukan CUD */ ? <CircularProgress size={24} /> : (isEditing ? 'Simpan Perubahan' : 'Tambah')}
+            {isLoading && !categories.length ? <CircularProgress size={24} /> : (isEditing ? 'Simpan Perubahan' : 'Tambah')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -334,7 +333,7 @@ const CategoriesPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar untuk Notifikasi Global */}
+      {/* Snackbar untuk notifikasi */}
       <Snackbar
         open={notification.open}
         autoHideDuration={4000}

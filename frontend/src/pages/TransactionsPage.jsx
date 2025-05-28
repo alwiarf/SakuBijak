@@ -1,5 +1,4 @@
-// src/pages/TransactionsPage.jsx
-import React, { useEffect, useState, useCallback, useMemo } from 'react'; // Tambahkan useMemo
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Typography, Button, TextField, IconButton, Paper, CircularProgress,
@@ -75,16 +74,6 @@ const TransactionsPage = () => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // useEffect untuk logging data kategori ketika berubah (bisa di-uncomment untuk debug)
-  // useEffect(() => {
-  //   if (!isLoadingCategories && Array.isArray(categories)) {
-  //     console.log("TRANSACTIONSPAGE - Data Kategori dari Redux:", JSON.stringify(categories.map(c => ({id: c.id, name: c.name, typeId: typeof c.id}))));
-  //   }
-  //   if (!isLoadingTransactions && Array.isArray(transactions)) {
-  //      console.log("TRANSACTIONSPAGE - Data Transaksi dari Redux:", JSON.stringify(transactions.map(t => ({id: t.id, category_id: t.category_id, typeCatId: typeof t.category_id }))));
-  //   }
-  // }, [categories, isLoadingCategories, transactions, isLoadingTransactions]);
-
   const handleCloseFormDialog = useCallback(() => {
     setOpenFormDialog(false);
     setTimeout(() => {
@@ -112,7 +101,6 @@ const TransactionsPage = () => {
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setTransactionData(prevData => ({ ...prevData, [name]: value }));
-    // Hapus error untuk field yang sedang diubah saja
     if (formError[name]) {
         setFormError(prevErrors => {
             const newErrors = {...prevErrors};
@@ -175,8 +163,7 @@ const TransactionsPage = () => {
       description: transactionData.description.trim(),
       amount: transactionData.amount, 
       date: transactionData.date,
-      // Gunakan nama field yang konsisten dengan state dan apa yang diharapkan slice
-      categoryId: transactionData.category_id // Slice akan mengubah ini menjadi category_id jika perlu
+      categoryId: transactionData.category_id
     };
         
     if (isEditing && currentTransaction && currentTransaction.id) {
@@ -271,7 +258,7 @@ const TransactionsPage = () => {
               </TableHead>
               <TableBody>
                 {paginatedTransactions.map((transaction) => {
-                  const categoryNameToDisplay = getCategoryName(transaction.category_id); // Gunakan category_id (underscore)
+                  const categoryNameToDisplay = getCategoryName(transaction.category_id);
                   return (
                     <TableRow hover key={transaction.id}>
                       <TableCell>{formatDate(transaction.date)}</TableCell>
@@ -319,9 +306,9 @@ const TransactionsPage = () => {
             <InputLabel id="category-select-label">Kategori</InputLabel>
             <Select
               labelId="category-select-label"
-              id="category_id" // Sesuaikan dengan state
-              name="category_id" // Sesuaikan dengan state
-              value={transactionData.category_id} // Bind ke transactionData.category_id
+              id="category_id" 
+              name="category_id" 
+              value={transactionData.category_id}
               label="Kategori"
               onChange={handleInputChange}
               variant="outlined"

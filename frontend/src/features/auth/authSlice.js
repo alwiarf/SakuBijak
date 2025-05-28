@@ -1,8 +1,7 @@
-// frontend/src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../../services/apiClient'; // Pastikan path ini benar dan apiClient diaktifkan
+import apiClient from '../../services/apiClient';
 
-// Mengambil data pengguna dari localStorage jika ada (misalnya setelah refresh)
+// Mengambil data pengguna dari localStorage jika ada
 const userFromStorage = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user'))
     : null;
@@ -110,15 +109,13 @@ export const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        // Pesan dari backend (action.payload.message) akan digunakan
         state.message = action.payload.message || 'Registrasi berhasil! Silakan login.';
-        // User tidak otomatis login, jadi state.user, state.token, dan state.isAuthenticated tidak diubah di sini
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload || 'Registrasi gagal.'; // Pesan error dari rejectWithValue
-        state.user = null; // Pastikan user null jika registrasi gagal
+        state.message = action.payload || 'Registrasi gagal.';
+        state.user = null;
       })
       // Kasus untuk Login
       .addCase(loginUser.pending, (state) => {
@@ -144,7 +141,7 @@ export const authSlice = createSlice({
         state.token = null;
       })
       // Kasus untuk Logout
-      .addCase(logoutUser.pending, (state) => { // Tambahkan pending state untuk logout jika ada operasi async
+      .addCase(logoutUser.pending, (state) => { 
         state.isLoading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
@@ -155,11 +152,10 @@ export const authSlice = createSlice({
         state.isSuccess = true; // Menandakan logout sukses
         state.message = 'Anda telah berhasil logout.';
       })
-      .addCase(logoutUser.rejected, (state, action) => { // Jika logout API gagal dan Anda ingin menanganinya
+      .addCase(logoutUser.rejected, (state, action) => { 
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload || 'Logout gagal.';
-        // Meskipun logout API gagal, state user, isAuthenticated, token tetap direset karena localStorage sudah dibersihkan.
         state.user = null;
         state.isAuthenticated = false;
         state.token = null;

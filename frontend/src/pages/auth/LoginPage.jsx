@@ -1,4 +1,3 @@
-// File: src/pages/auth/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -42,7 +41,6 @@ const LoginPage = () => {
 
   // Mengambil state dari Redux store
   const { 
-    // user, // Bisa digunakan untuk menyapa pengguna atau keperluan lain
     isAuthenticated, 
     isLoading, 
     isError, 
@@ -60,7 +58,7 @@ const LoginPage = () => {
     }
 
     // Jika login sukses dan pengguna terautentikasi
-    if (isSuccess && isAuthenticated && message.includes('Login berhasil')) { // Lebih spesifik untuk pesan sukses login
+    if (isSuccess && isAuthenticated && message.includes('Login berhasil')) { 
       setSnackbarMessage(message);
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
@@ -168,20 +166,13 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading} // Nonaktifkan saat loading dari Redux
             />
-            
-            {/* Pesan error dari form lokal bisa dihapus jika semua error ditangani via Snackbar Redux */}
-            {/* {error && (
-              <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
-                {error}
-              </Typography>
-            )} */}
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ 
-                mt: 3, // Margin atas disesuaikan
+                mt: 3, 
                 mb: 2, 
                 py: 1.5, 
                 position: 'relative',
@@ -221,7 +212,7 @@ const LoginPage = () => {
         
         <Snackbar
           open={snackbarOpen}
-          autoHideDuration={4000} // Durasi bisa disesuaikan
+          autoHideDuration={4000}
           onClose={handleCloseSnackbar}
           TransitionComponent={SlideTransition}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}

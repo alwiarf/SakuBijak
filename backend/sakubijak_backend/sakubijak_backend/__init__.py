@@ -1,7 +1,5 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\__init__.py
-
 from pyramid.config import Configurator
-from pyramid.authorization import ACLAuthorizationPolicy # Akan kita gunakan nanti untuk otorisasi
+from pyramid.authorization import ACLAuthorizationPolicy
 
 # Impor JWTAuthenticationPolicy yang baru dibuat
 from .security import JWTAuthenticationPolicy 
@@ -16,12 +14,10 @@ class RootACLFactory:
     __acl__ = [
         (Allow, Authenticated, 'view_self'),
         (Allow, Authenticated, 'edit_self'), # Izinkan semua pengguna terautentikasi untuk permission 'view_self'
-        # Tambahkan permission lain di sini nanti
-        # (Allow, 'group:admin', ALL_PERMISSIONS), # Contoh untuk admin
     ]
 
     def __init__(self, request):
-        pass # Request tidak digunakan di sini untuk ACL sederhana
+        pass
 
 
 def main(global_config, **settings):
@@ -39,7 +35,6 @@ def main(global_config, **settings):
         jwt_algorithm = settings.get('jwt.algorithm', 'HS256') # Default ke HS256 jika tidak ada
 
         if not jwt_secret:
-            # Ini krusial, aplikasi tidak boleh berjalan tanpa secret key untuk JWT
             raise ValueError("JWT Secret Key tidak diatur dalam konfigurasi.")
 
         # 2. Buat instance dari JWTAuthenticationPolicy
@@ -48,8 +43,7 @@ def main(global_config, **settings):
         # 3. Atur authentication policy
         config.set_authentication_policy(authn_policy)
 
-        # 4. Atur authorization policy (kita akan menggunakan ACLAuthorizationPolicy standar untuk sekarang)
-        # Ini akan diperlukan ketika kita mulai memproteksi view dengan permission.
+        # 4. Atur authorization policy
         authz_policy = ACLAuthorizationPolicy()
         config.set_authorization_policy(authz_policy)
         config.set_root_factory(RootACLFactory)

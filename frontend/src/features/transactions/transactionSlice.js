@@ -17,7 +17,7 @@ const initialState = {
     latest_transactions: [],
     top_category_this_month: { name: 'N/A', total: 0 },
     total_transactions_this_month: 0,
-    expenses_per_category: [], // Tambahkan field ini
+    expenses_per_category: [],
   },
   isLoading: false,
   isLoadingSummary: false,
@@ -68,13 +68,11 @@ export const createTransaction = createAsyncThunk(
       }
 
       // Bentuk payload yang akan dikirim ke backend
-      // Pastikan amount dan category_id dikirim sebagai string untuk konsistensi
-      // dengan bagaimana backend Anda mungkin mengharapkannya sebelum parsing internal
       const payload = {
         description: transactionDataFromPage.description.trim(),
-        amount: String(transactionDataFromPage.amount), // Kirim sebagai string
+        amount: String(transactionDataFromPage.amount), 
         date: dateToSend,
-        category_id: String(transactionDataFromPage.categoryId) // Kirim sebagai string
+        category_id: String(transactionDataFromPage.categoryId) 
       };
       console.log("--- Slice: Payload ke Backend (createTransaction) ---", payload);
       
@@ -116,7 +114,6 @@ export const updateTransaction = createAsyncThunk(
         return thunkAPI.rejectWithValue('Jika diupdate, format tanggal tidak valid.');
       }
 
-      // Siapkan payload, pastikan amount dan category_id sebagai string jika backend mengharapkannya
       const payload = {
         description: dataToUpdate.description ? dataToUpdate.description.trim() : undefined,
         amount: dataToUpdate.amount ? String(dataToUpdate.amount) : undefined,
@@ -172,8 +169,6 @@ export const fetchDashboardSummary = createAsyncThunk(
     try {
       const response = await apiClient.get('/api/dashboard/summary');
       console.log("Dashboard Summary API Response:", response.data); // Log untuk debugging
-      // Pastikan data yang diterima dari API memiliki field expenses_per_category
-      // Jika tidak, default ke array kosong untuk menghindari error di frontend
       const summaryData = response.data;
       if (!summaryData.expenses_per_category) {
         summaryData.expenses_per_category = [];

@@ -1,5 +1,3 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\models\__init__.py
-
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import configure_mappers # Penting untuk relasi

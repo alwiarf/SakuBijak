@@ -1,5 +1,4 @@
-// src/pages/DashboardPage.jsx
-import React, { useEffect } from 'react'; // Hapus useRef jika tidak dipakai lagi
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Typography, Paper, Grid, Box, Avatar, Divider, Button,
@@ -244,9 +243,9 @@ const DashboardPage = () => {
       )}
 
 
-      {/* --- BAGIAN GRAFIK PENGELUARAN PER KATEGORI (BAR CHART - PALING BAWAH & LEBAR) --- */}
-      {(!isError || (dashboardSummary && barChartData.length > 0)) && ( // Tampilkan hanya jika ada data chart atau tidak error
-        <Box> {/* Box pembungkus untuk judul dan chart */}
+      {/*BAGIAN GRAFIK PENGELUARAN PER KATEGORI*/}
+      {(!isError || (dashboardSummary && barChartData.length > 0)) && (
+        <Box>
             <Typography variant="h5" component="h2" sx={{ fontWeight: 600, mb: 2.5, color: 'text.primary', fontSize: {xs: '1.25rem', sm: '1.5rem'} }}>
             Pengeluaran per Kategori
             </Typography>
@@ -254,7 +253,7 @@ const DashboardPage = () => {
                 <Box 
                     sx={{ 
                         width: '100%', 
-                        height: { xs: 350, sm: 400, md: 450 }, // Tinggi chart bisa disesuaikan
+                        height: { xs: 350, sm: 400, md: 450 },
                 }}>
                 {isLoadingSummary && barChartData.length === 0 ? ( // Jika masih loading dan belum ada data chart
                     <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}><CircularProgress /></Box>
@@ -269,11 +268,11 @@ const DashboardPage = () => {
                             data={barChartData}
                             margin={{
                                 top: 5,
-                                right: 25, // Margin kanan agar label YAxis tidak terpotong
+                                right: 25,
                                 left: 10, 
-                                bottom: barChartData.length > 4 ? 70 : 50, // Margin bawah lebih besar jika label XAxis miring
+                                bottom: barChartData.length > 4 ? 70 : 50, 
                             }}
-                            barSize={barChartData.length < 5 ? 60 : (barChartData.length < 10 ? 40 : 30)} // Ukuran bar dinamis
+                            barSize={barChartData.length < 5 ? 60 : (barChartData.length < 10 ? 40 : 30)}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis 
@@ -282,7 +281,7 @@ const DashboardPage = () => {
                                 angle={barChartData.length > 5 ? -35 : 0} 
                                 textAnchor={barChartData.length > 5 ? "end" : "middle"}
                                 interval={0} 
-                                height={barChartData.length > 5 ? 80 : 50} // Tinggi untuk XAxis
+                                height={barChartData.length > 5 ? 80 : 50}
                                 tick={{ fontSize: 12 }}
                             />
                             <YAxis 
@@ -293,14 +292,14 @@ const DashboardPage = () => {
                                 }}
                                 allowDecimals={false}
                                 tick={{ fontSize: 12 }}
-                                width={80} // Lebar untuk YAxis agar label tidak terpotong
+                                width={80}
                             />
                             <Tooltip 
                                 formatter={(value, name, props) => [formatCurrency(value), props.payload.name]}
                                 cursor={{fill: alpha(theme.palette.action.hover, 0.1)}}
                             />
                             <Legend verticalAlign="bottom" height={36}/>
-                            <Bar dataKey="total" radius={[4, 4, 0, 0]} /* Bar dengan sudut atas membulat */ >
+                            <Bar dataKey="total" radius={[4, 4, 0, 0]} >
                                 {barChartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={BAR_COLORS[index % BAR_COLORS.length]} />
                                 ))}

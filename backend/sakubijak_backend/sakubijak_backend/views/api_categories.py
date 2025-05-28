@@ -1,5 +1,3 @@
-# File: D:\Project\SakuBijak\backend\sakubijak_backend\sakubijak_backend\views\api_categories.py
-
 from pyramid.view import view_config
 from pyramid.httpexceptions import (
     HTTPBadRequest, 
@@ -17,7 +15,7 @@ from ..models import Category, User
 VIEW_PERMISSION = 'view_self'
 EDIT_PERMISSION = 'edit_self'
 
-# --- Fungsi create_category_view dan get_categories_view tetap sama seperti sebelumnya ---
+# Fungsi create_category_view dan get_categories_view
 @view_config(
     route_name='api_categories_collection',
     request_method='POST',
@@ -90,8 +88,6 @@ def get_categories_view(request):
         request.response.status_code = 500
         return {'error': 'Gagal mengambil data kategori dari server.'}
 
-# --- TAMBAHKAN VIEW BARU DI BAWAH INI ---
-
 @view_config(
     route_name='api_category_item',
     request_method='GET',
@@ -119,7 +115,7 @@ def get_category_detail_view(request):
             'id': category.id,
             'name': category.name,
             'description': category.description,
-            'user_id': category.user_id, # Bisa juga disertakan untuk konfirmasi
+            'user_id': category.user_id,
             'created_at': category.created_at.isoformat() if category.created_at else None,
             'updated_at': category.updated_at.isoformat() if category.updated_at else None,
         }
@@ -213,9 +209,6 @@ def delete_category_view(request):
             category = request.dbsession.query(Category).filter_by(id=category_id, user_id=user_id).first()
             if not category:
                 raise HTTPNotFound(json_body={'error': 'Kategori tidak ditemukan atau Anda tidak memiliki akses.'})
-            
-            # Periksa apakah ada transaksi yang terkait dengan kategori ini (jika ada relasi cascade='delete-orphan' di model Category ke Transaction, ini akan otomatis menghapus transaksi terkait. Jika tidak, Anda mungkin perlu menangani atau mencegah penghapusan kategori yang masih memiliki transaksi)
-            # Untuk sekarang, kita asumsikan cascade sudah diatur atau kita tidak melakukan pengecekan ini.
 
             request.dbsession.delete(category)
             # request.dbsession.flush() # Tidak selalu perlu flush eksplisit untuk delete sebelum commit oleh TM

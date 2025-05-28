@@ -1,13 +1,13 @@
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest, HTTPUnauthorized, HTTPCreated # HTTPOk tidak perlu eksplisit jika renderer='json'
+from pyramid.httpexceptions import HTTPBadRequest, HTTPUnauthorized, HTTPCreated
 import transaction
 from passlib.context import CryptContext
-import jwt # Impor library jwt
-import datetime # Untuk mengatur waktu kedaluwarsa token
+import jwt
+import datetime
 
 from ..models import User
 
-# Konfigurasi context untuk hashing password (sudah ada dari register_view)
+# Konfigurasi context untuk hashing password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
@@ -113,7 +113,6 @@ def login_view(request):
         expiration_delta_seconds = int(settings.get('jwt.expiration_delta_seconds', 3600))
 
         if not secret_key:
-            # Seharusnya tidak terjadi jika development.ini dikonfigurasi
             print("ERROR: JWT Secret Key tidak dikonfigurasi!")
             request.response.status_code = 500
             return {'error': 'Konfigurasi server error.'}
@@ -156,14 +155,9 @@ def users_me_view(request):
     Mengembalikan detail pengguna yang sedang login.
     Memerlukan autentikasi (token JWT valid).
     """
-    # request.authenticated_userid akan berisi user_id dari payload token
-    # jika token valid dan authentication policy kita bekerja.
     logged_in_user_id = request.authenticated_userid
 
     if not logged_in_user_id:
-        # Ini seharusnya tidak terjadi jika permission='view_self' bekerja dengan benar,
-        # karena Pyramid akan mengembalikan 403 Forbidden sebelumnya.
-        # Tapi sebagai fallback:
         request.response.status_code = 401
         return {'error': 'Tidak terautentikasi'}
 

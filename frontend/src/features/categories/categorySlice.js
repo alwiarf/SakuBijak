@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../../services/apiClient'; // Menggunakan apiClient yang sudah ada
+import apiClient from '../../services/apiClient'; 
 
 const initialState = {
   categories: [],
   isLoading: false,
   isError: false,
-  isSuccess: false, // Untuk menandakan operasi CUD individu sukses
+  isSuccess: false,
   message: '',
 };
 
-// --- Async Thunks untuk Kategori dengan Panggilan API Sebenarnya ---
+
 
 // 1. Fetch Categories
 export const fetchCategories = createAsyncThunk(
@@ -17,7 +17,6 @@ export const fetchCategories = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await apiClient.get('/api/categories');
-      // Backend mengembalikan: { "categories": [...] }
       return response.data.categories; 
     } catch (error) {
       const message =
@@ -32,10 +31,9 @@ export const fetchCategories = createAsyncThunk(
 // 2. Create Category
 export const createCategory = createAsyncThunk(
   'categories/create',
-  async (categoryData, thunkAPI) => { // categoryData = { name, description }
+  async (categoryData, thunkAPI) => {
     try {
       const response = await apiClient.post('/api/categories', categoryData);
-      // Backend mengembalikan: { "message": "...", "category": {...} }
       return response.data.category; 
     } catch (error) {
       const message =
@@ -50,11 +48,10 @@ export const createCategory = createAsyncThunk(
 // 3. Update Category
 export const updateCategory = createAsyncThunk(
   'categories/update',
-  async (categoryData, thunkAPI) => { // categoryData = { id, name, description }
+  async (categoryData, thunkAPI) => { 
     try {
       const { id, ...dataToUpdate } = categoryData;
       const response = await apiClient.put(`/api/categories/${id}`, dataToUpdate);
-      // Backend mengembalikan: { "message": "...", "category": {...} }
       return response.data.category; 
     } catch (error) {
       const message =
@@ -72,7 +69,6 @@ export const deleteCategory = createAsyncThunk(
   async (categoryId, thunkAPI) => {
     try {
       await apiClient.delete(`/api/categories/${categoryId}`);
-      // Backend mengembalikan 204 No Content, jadi kita kembalikan categoryId agar bisa di-filter di reducer
       return categoryId; 
     } catch (error) {
       const message =
