@@ -32,7 +32,6 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
 - **Manajemen Pengguna:**
   - Registrasi pengguna baru.
   - Login untuk pengguna terdaftar.
-  - (Opsional) Update profil pengguna.
 - **Manajemen Transaksi (CRUD):**
   - **Create:** Menambah data pengeluaran baru (deskripsi, jumlah, tanggal, kategori).
   - **Read:** Menampilkan daftar pengeluaran dengan opsi filter (per periode, per kategori).
@@ -47,7 +46,7 @@ Dalam kehidupan sehari-hari, seringkali kita kesulitan melacak ke mana saja uang
   - Menampilkan total pengeluaran dalam periode tertentu.
   - Visualisasi sederhana pengeluaran per kategori.
 - **Keamanan:**
-  - Autentikasi dasar untuk melindungi data pribadi pengguna.
+  - Autentikasi JWT untuk melindungi data pribadi pengguna.
 
 ## Teknologi yang Digunakan
 
